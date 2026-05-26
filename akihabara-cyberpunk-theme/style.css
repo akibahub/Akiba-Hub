@@ -1,0 +1,83 @@
+/*
+Theme Name: Akihabara Cyberpunk TCG
+Theme URI: https://akibahub.jp/theme
+Author: Google AI Studio Build
+Author URI: https://ai.studio/build
+Description: A high-precision Akihabara neon aesthetic WordPress theme featuring futuristic typography, cyberpunk grid designs, glow utilities, and standard WooCommerce element layout pipelines. Perfect for sealed TCG booster packs, anime action figures, and premium collectors.
+Version: 1.0.0
+License: GNU GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: akihabara-cyberpunk
+Tags: dark, ecommerce, full-width-template, translation-ready, cyberpunk, neon
+
+This theme is designed to match the high-contrast raw Tokyo cyberpunk aesthetic layout of Akiba Hub.
+*/
+
+/* Core Cyberpunk Base Colors and Typography Setup */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+  --color-neonpink: #ff007f;
+  --color-neoncyan: #00f0ff;
+  --color-neongreen: #39ff14;
+  --color-neonyellow: #fefe00;
+  --color-slate-950: #03030c;
+}
+
+body {
+  background-color: #03030c;
+  color: #e2e8f0;
+  font-family: 'Rajdhani', sans-serif;
+  overflow-x: hidden;
+  background-image: 
+    linear-gradient(rgba(18, 18, 30, 0.45) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 18, 30, 0.45) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* Neon Glow utilities */
+.glow-pink {
+  box-shadow: 0 0 10px rgba(255, 0, 127, 0.3), 0 0 20px rgba(255, 0, 127, 0.1);
+}
+.glow-pink-text {
+  text-shadow: 0 0 5px rgba(255, 0, 127, 0.8), 0 0 10px rgba(255, 0, 127, 0.3);
+}
+.glow-cyan {
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3), 0 0 20px rgba(0, 240, 255, 0.1);
+}
+.glow-cyan-text {
+  text-shadow: 0 0 5px rgba(0, 240, 255, 0.8), 0 0 10px rgba(0, 240, 255, 0.3);
+}
+.glow-green {
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+}
+
+/* Cyber grid scanner layer */
+.cyber-grid::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 9999;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+/* Smooth customized cyberpunk scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #03030c;
+}
+::-webkit-scrollbar-thumb {
+  background: #ff007f;
+  border: 1px solid #00f0ff;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00f0ff;
+}

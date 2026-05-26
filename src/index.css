@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;503;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Rajdhani", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Orbitron", sans-serif;
+  --font-mono: "Share Tech Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Modern Akihabara Crimson Red and Premium Street White Theme */
+  --color-neonpink: #e60012;
+  --color-[#ff007f]: #e60012;
+  --color-neoncyan: #ffffff;
+  --color-[#00f0ff]: #ffffff;
+  --color-neongreen: #10b981;
+  --color-neonyellow: #e60012;
+  --color-neonpurple: #1c1c1f;
+  --color-slate-950: #0d0d0d;
+  --color-pokeyellow: #ffffff;
+  --color-pokered: #e60012;
+  --color-[#3C5AA6]: #ffffff;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #0a0a0c;
+  color: #f4f4f7;
+  overflow-x: hidden;
+  background-image: 
+    linear-gradient(rgba(230, 0, 18, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* Street culture overlay scanline effect */
+.cyber-grid::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(10, 10, 12, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(230, 0, 18, 0.02), rgba(255, 255, 255, 0.01), rgba(0, 0, 0, 0.02));
+  z-index: 1000;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+/* Neon Glow utilities */
+.glow-pink {
+  box-shadow: 0 0 10px rgba(230, 0, 18, 0.45), 0 0 20px rgba(230, 0, 18, 0.15);
+}
+.glow-pink-text {
+  text-shadow: 0 0 5px rgba(230, 0, 18, 0.85);
+}
+.glow-cyan {
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 0 20px rgba(255, 255, 255, 0.1);
+}
+.glow-cyan-text {
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
+}
+.glow-green {
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e60012;
+  border: 1px solid #ffffff;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffffff;
+}
+

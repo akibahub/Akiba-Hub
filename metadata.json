@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Akiba Hub",
+  "description": "Premium TCG card packs and anime action figures store featuring a rich interactive catalog, sliding cart drawer, multi-step checkout funnel, and a beautiful custom PayPal checkout integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
