@@ -5,12 +5,24 @@ interface ShopContextType {
   cart: CartItem[];
   isCartOpen: boolean;
   activeView: 'landing' | 'shop' | 'checkout' | 'order-success';
-  selectedCategory: string;
-  selectedAnime: string;
+  selectedCategory: string; // 'all' | 'anime-figures' | 'trading-cards' | 'comic-books' | 'manga' | 'accessories'
+  selectedAnime: string; // 'All Anime' or specific series name
+  selectedSubCategory: string | null; // e.g., 'pokemon', 'onepiece', 'banpresto', etc.
+  selectedLanguage: string | null; // e.g., 'EN', 'JP', 'CN', 'KR', 'Other'
+  selectedProductLine: string | null; // e.g., 'Ichibansho', 'Nendoroid', etc.
+  comingSoonCategory: string | null;
+  setComingSoonCategory: (cat: string | null) => void;
   currentOrder: Order | null;
   setCartOpen: (open: boolean) => void;
   setView: (view: 'landing' | 'shop' | 'checkout' | 'order-success') => void;
   setCategoryAndGroup: (category: string, anime?: string) => void;
+  setAdvancedFilters: (filters: {
+    category?: string;
+    subCategory?: string | null;
+    language?: string | null;
+    productLine?: string | null;
+    anime?: string;
+  }) => void;
   addToCart: (product: Product, quantity?: number) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -31,6 +43,11 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   const [activeView, setView] = useState<'landing' | 'shop' | 'checkout' | 'order-success'>( 'landing');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedAnime, setSelectedAnime] = useState<string>('All Anime');
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+  const [selectedProductLine, setSelectedProductLine] = useState<string | null>(null);
+  
+  const [comingSoonCategory, setComingSoonCategory] = useState<string | null>(null);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(() => {
     const saved = localStorage.getItem('akiba_hub_latest_order');
     return saved ? JSON.parse(saved) : null;
@@ -49,8 +66,61 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   }, [currentOrder]);
 
   const setCategoryAndGroup = (category: string, anime: string = 'All Anime') => {
-    setSelectedCategory(category);
-    setSelectedAnime(anime);
+    if (category === 'manga' || category === 'comic-books') {
+      setComingSoonCategory(category === 'manga' ? 'Manga & Light Novels' : 'Comic Books');
+      return;
+    }
+    // Handle translating legacy categories to the upgraded structure
+    if (category === 'pokemon-english') {
+      setSelectedCategory('trading-cards');
+      setSelectedSubCategory('pokemon');
+      setSelectedLanguage('EN');
+    } else if (category === 'pokemon-japanese') {
+      setSelectedCategory('trading-cards');
+      setSelectedSubCategory('pokemon');
+      setSelectedLanguage('JP');
+    } else if (category === 'onepiece-english') {
+      setSelectedCategory('trading-cards');
+      setSelectedSubCategory('onepiece');
+      setSelectedLanguage('EN');
+    } else if (category === 'onepiece-japanese') {
+      setSelectedCategory('trading-cards');
+      setSelectedSubCategory('onepiece');
+      setSelectedLanguage('JP');
+    } else if (category === 'action-fig') {
+      setSelectedCategory('anime-figures');
+      setSelectedSubCategory(null);
+      setSelectedLanguage(null);
+      setSelectedProductLine(null);
+      setSelectedAnime(anime);
+    } else {
+      setSelectedCategory(category);
+      setSelectedSubCategory(null);
+      setSelectedLanguage(null);
+      setSelectedProductLine(null);
+      setSelectedAnime(anime);
+    }
+    setView('shop');
+  };
+
+  const setAdvancedFilters = (filters: {
+    category?: string;
+    subCategory?: string | null;
+    language?: string | null;
+    productLine?: string | null;
+    anime?: string;
+  }) => {
+    if (filters.category !== undefined) {
+      if (filters.category === 'manga' || filters.category === 'comic-books') {
+        setComingSoonCategory(filters.category === 'manga' ? 'Manga & Light Novels' : 'Comic Books');
+        return;
+      }
+      setSelectedCategory(filters.category);
+    }
+    if (filters.subCategory !== undefined) setSelectedSubCategory(filters.subCategory);
+    if (filters.language !== undefined) setSelectedLanguage(filters.language);
+    if (filters.productLine !== undefined) setSelectedProductLine(filters.productLine);
+    if (filters.anime !== undefined) setSelectedAnime(filters.anime);
     setView('shop');
   };
 
@@ -114,10 +184,16 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
         activeView,
         selectedCategory,
         selectedAnime,
+        selectedSubCategory,
+        selectedLanguage,
+        selectedProductLine,
+        comingSoonCategory,
+        setComingSoonCategory,
         currentOrder,
         setCartOpen,
         setView,
         setCategoryAndGroup,
+        setAdvancedFilters,
         addToCart,
         removeFromCart,
         updateQuantity,

@@ -6,45 +6,68 @@ interface LogoProps {
 
 export function Logo({ className = '' }: LogoProps) {
   return (
-    <div className={`flex items-center gap-3 select-none ${className}`}>
-      <div className="relative w-10 h-10 flex items-center justify-center">
-        {/* outer pokeball border with pulse glow */}
-        <div className="absolute inset-0 bg-[#e60012] rounded-full border-2 border-white shadow-[0_0_15px_rgba(230,0,18,0.6)] animate-pulse"></div>
-        
-        {/* bottom cyber dark half */}
-        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[#0c0c12] rounded-b-full border-t-2 border-white"></div>
-        
-        {/* central black divider line */}
-        <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-white -translate-y-1/2"></div>
-        
-        {/* Torii Gate Accent inside */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-[6px] z-10">
-          <svg viewBox="0 0 100 100" className="w-5 h-5 text-white filter drop-shadow-[0_0_3px_#e60012]" fill="currentColor">
-            {/* Top curved lintel */}
-            <path d="M15 25 H85 V32 H15 Z" />
-            <path d="M8 15 C30 22, 70 22, 92 15 V22 C70 28, 30 28, 8 22 Z" />
-            
-            {/* Supporting double columns */}
-            <rect x="30" y="32" width="8" height="50" />
-            <rect x="62" y="32" width="8" height="50" />
-            
-            {/* Tie-beam (Nuki) */}
-            <rect x="20" y="45" width="60" height="6" />
-          </svg>
-        </div>
+    <div className={`flex items-center gap-3.5 select-none ${className}`}>
+      {/* Icon Emblem from User's Logo Graphic */}
+      <div className="relative w-[50px] h-[50px] flex-shrink-0 flex items-center justify-center">
+        <svg viewBox="0 0 100 100" className="w-full h-full filter drop-shadow-[0_0_8px_rgba(230,0,18,0.25)]">
+          {/* Mask to cut horizontal stripes at the bottom of the sun */}
+          <defs>
+            <mask id="sun-stripes-mask">
+              {/* White allows full visibility */}
+              <rect x="0" y="0" width="100" height="100" fill="white" />
+              {/* Black horizontal lines cut cuts/holes out of the red sun */}
+              <rect x="10" y="65" width="80" height="2" fill="black" />
+              <rect x="10" y="69.5" width="80" height="2.5" fill="black" />
+              <rect x="10" y="74.5" width="80" height="3" fill="black" />
+              <rect x="10" y="80.5" width="80" height="3.5" fill="black" />
+            </mask>
+          </defs>
 
-        {/* Pokeball center button dot */}
-        <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-white border border-[#e60012] rounded-full z-20 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center shadow-[0_0_8px_#ffffff]">
-          <div className="w-1.5 h-1.5 bg-[#0a0a0c] rounded-full"></div>
-        </div>
+          {/* 1. Large Traditional Kanji "秋" (Aki) Watermark in the background */}
+          <text
+            x="50"
+            y="76"
+            fill="rgba(255, 255, 255, 0.16)"
+            fontSize="88"
+            fontFamily="serif, 'Noto Serif JP', '游明朝', 'MS Mincho'"
+            textAnchor="middle"
+            fontWeight="bold"
+          >
+            秋
+          </text>
+
+          {/* 2. Red Rising Sun (Nippon Hinomaru) with Slice Gaps from Mask */}
+          <circle
+            cx="50"
+            cy="48"
+            r="32"
+            fill="#e60012"
+            mask="url(#sun-stripes-mask)"
+          />
+
+          {/* 3. Small Kanji "秋葉原" (Akihabara) embedded beautifully on the lower right of solid sun region */}
+          <text
+            x="76"
+            y="60"
+            fill="white"
+            fontSize="7"
+            fontFamily="sans-serif, 'Noto Sans JP', 'Hiragino Kaku Gothic ProN'"
+            fontWeight="900"
+            letterSpacing="0.05em"
+            textAnchor="end"
+          >
+            秋葉原
+          </text>
+        </svg>
       </div>
-      
+
+      {/* Primary Brand Typography */}
       <div className="flex flex-col">
         <span className="font-display font-black tracking-widest text-xl leading-none italic text-white flex gap-1 glow-pink-text">
           AKIBA <span className="text-white filter drop-shadow-[0_0_2px_#e60012]">HUB</span>
         </span>
-        <span className="text-[9px] font-mono font-bold tracking-[0.2em] text-[#e60012] leading-none mt-1">
-          TOKYO PROTOCOL // UK PIPELINE
+        <span className="text-[9px] font-mono font-bold tracking-[0.2em] text-[#e60012] leading-none mt-1.5 uppercase">
+          FROM FANS TO FANS
         </span>
       </div>
     </div>

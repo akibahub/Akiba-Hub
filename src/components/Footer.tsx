@@ -84,12 +84,12 @@ export function Footer({ className = '' }: { className?: string }) {
           <ul className="space-y-2 text-xs font-semibold text-gray-400 font-mono">
             <li>
               <button onClick={() => handleCategorySelect('pokemon-english')} className="hover:text-white hover:underline text-left cursor-pointer transition-colors">
-                Pokémon Packs (English)
+                Pokémon TCG (English)
               </button>
             </li>
             <li>
               <button onClick={() => handleCategorySelect('pokemon-japanese')} className="hover:text-white hover:underline text-left cursor-pointer transition-colors">
-                Pokémon Packs (Japanese)
+                Pokémon TCG (Japanese)
               </button>
             </li>
             <li>

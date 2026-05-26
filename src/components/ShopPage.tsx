@@ -2,20 +2,24 @@ import React, { useState, useMemo } from 'react';
 import { useShop } from '../context/ShopContext';
 import { PRODUCTS, ANIME_CATEGORIES } from '../data';
 import { Product } from '../types';
-import { Search, SlidersHorizontal, ShoppingCart, Star, HelpCircle, Eye, Check, X, Sparkles, Filter } from 'lucide-react';
+import { Search, SlidersHorizontal, ShoppingCart, Star, HelpCircle, Eye, Check, X, Sparkles, Filter, ShieldCheck, ChevronRight } from 'lucide-react';
 
 export function ShopPage() {
   const {
     addToCart,
     selectedCategory,
-    setCategoryAndGroup,
     selectedAnime,
+    selectedSubCategory,
+    selectedLanguage,
+    selectedProductLine,
+    setAdvancedFilters,
+    setCategoryAndGroup,
     cart
   } = useShop();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'rating-desc'>('default');
-  const [setSelectedQuickView, setSetSelectedQuickView] = useState<Product | null>(null);
+  const [selectedQuickView, setSelectedQuickView] = useState<Product | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
   // Filter products dynamically
@@ -25,21 +29,39 @@ export function ShopPage() {
       const matchCategory =
         selectedCategory === 'all' || product.category === selectedCategory;
 
-      // 2. Matches active anime filter if looking at action-fig category
+      // 2. Matches active subCategory (manufacturer or TCG game name)
+      const matchSubCategory =
+        !selectedSubCategory || product.subCategory === selectedSubCategory;
+
+      // 3. Matches active language (for TCGs)
+      const matchLanguage =
+        !selectedLanguage || product.language === selectedLanguage;
+
+      // 4. Matches active product line (for Figures)
+      const matchProductLine =
+        !selectedProductLine || product.productLine === selectedProductLine;
+
+      // 5. Matches active anime filter (primarily figure filtering)
       const matchAnime =
-        selectedCategory !== 'action-fig' ||
+        selectedCategory !== 'anime-figures' ||
         selectedAnime === 'All Anime' ||
         product.anime === selectedAnime;
 
-      // 3. Matches search query
+      // 6. Matches search query (comprehensive indexer: anime, character name, franchise, subCat, prodLine, etc.)
+      const query = searchQuery.toLowerCase().trim();
       const matchSearch =
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (product.anime && product.anime.toLowerCase().includes(searchQuery.toLowerCase()));
+        !query ||
+        product.name.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query) ||
+        (product.anime && product.anime.toLowerCase().includes(query)) ||
+        (product.character && product.character.toLowerCase().includes(query)) ||
+        (product.franchise && product.franchise.toLowerCase().includes(query)) ||
+        (product.subCategory && product.subCategory.toLowerCase().includes(query)) ||
+        (product.productLine && product.productLine.toLowerCase().includes(query));
 
-      return matchCategory && matchAnime && matchSearch;
+      return matchCategory && matchSubCategory && matchLanguage && matchProductLine && matchAnime && matchSearch;
     });
-  }, [selectedCategory, selectedAnime, searchQuery]);
+  }, [selectedCategory, selectedSubCategory, selectedLanguage, selectedProductLine, selectedAnime, searchQuery]);
 
   // Sort products
   const sortedAndFilteredProducts = useMemo(() => {
@@ -53,7 +75,16 @@ export function ShopPage() {
     if (sortBy === 'rating-desc') {
       return list.sort((a, b) => b.rating - a.rating);
     }
-    return list;
+    
+    // DEFAULT sorting: Anime Figures first, then Alphabetically by name
+    return list.sort((a, b) => {
+      const aIsFigure = a.category === 'anime-figures';
+      const bIsFigure = b.category === 'anime-figures';
+      if (aIsFigure && !bIsFigure) return -1;
+      if (!aIsFigure && bIsFigure) return 1;
+      // alphabetical
+      return a.name.localeCompare(b.name);
+    });
   }, [filteredProducts, sortBy]);
 
   const handleAddToCart = (product: Product) => {
@@ -64,15 +95,36 @@ export function ShopPage() {
 
   // Helper labels for category text values
   const categoryHeaderTitle = useMemo(() => {
-    switch (selectedCategory) {
-      case 'pokemon-english': return 'Pokémon Packs (English TCG)';
-      case 'pokemon-japanese': return 'Pokémon Packs (Japanese TCG)';
-      case 'onepiece-english': return 'One Piece (English TCG)';
-      case 'onepiece-japanese': return 'One Piece (Japanese TCG)';
-      case 'action-fig': return `${selectedAnime} Figures`;
-      default: return 'All Collectibles';
+    if (selectedCategory === 'all') return 'All Tokyo Collectibles';
+    if (selectedCategory === 'trading-cards') {
+      if (selectedSubCategory) {
+        const gameLabel = selectedSubCategory.toUpperCase().replace('-', ' ');
+        const langLabel = selectedLanguage ? ` (${selectedLanguage})` : '';
+        return `${gameLabel} TCG${langLabel}`;
+      }
+      return 'Trading Card Games';
     }
-  }, [selectedCategory, selectedAnime]);
+    if (selectedCategory === 'anime-figures') {
+      if (selectedSubCategory) {
+        const lineLabel = selectedProductLine ? ` [${selectedProductLine}]` : '';
+        return `${selectedSubCategory.toUpperCase()}${lineLabel} Figures`;
+      }
+      return `${selectedAnime} Figures`;
+    }
+    if (selectedCategory === 'accessories') return 'Hobby Accessories';
+    return 'Collectibles';
+  }, [selectedCategory, selectedSubCategory, selectedLanguage, selectedProductLine, selectedAnime]);
+
+  const handleCategoryNav = (catId: string) => {
+    // reset drilldowns upon picking main category
+    setAdvancedFilters({
+      category: catId,
+      subCategory: null,
+      language: null,
+      productLine: null,
+      anime: 'All Anime'
+    });
+  };
 
   return (
     <div className="pt-28 pb-20 min-h-screen bg-[#070707]">
@@ -85,21 +137,18 @@ export function ShopPage() {
           
           <div className="space-y-2 relative z-10 text-center md:text-left">
             <div className="inline-flex items-center gap-1.5 bg-[#e60012]/15 border border-[#e60012] text-white px-3 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(230,0,18,0.15)]">
-              <Sparkles className="w-3.5 h-3.5" /> TOKYO DIRECT IMPORT
+              <Sparkles className="w-3.5 h-3.5 animate-pulse" /> AKIHABARA CORE SEEDING
             </div>
             <h1 className="text-2xl md:text-3xl font-display font-medium text-white tracking-widest uppercase">
               {categoryHeaderTitle}
             </h1>
-            <p className="text-xs text-gray-300 max-w-xl font-medium">
-              Browse our hand-picked selection of authentic sealed trading card packs and detailed scale PVC figures. Every item is guaranteed untampered and sourced direct from trusted publishers.
-            </p>
           </div>
 
           <div className="flex items-center justify-center relative bg-[#18181c] border border-white/10 p-5 rounded-lg flex-shrink-0">
             <div className="text-center font-mono">
-              <div className="text-[10px] text-[#e60012] uppercase tracking-widest font-bold">AVAILABLE ITEMS</div>
+              <div className="text-[10px] text-[#e60012] uppercase tracking-widest font-bold">MATCHING LOGITEMS</div>
               <div className="text-4xl font-extrabold text-white mt-1">{sortedAndFilteredProducts.length}</div>
-              <div className="text-[9px] text-[#e60012] font-bold mt-1.5">EXPRESS AIR SHIPPED GLOBAL</div>
+              <div className="text-[9px] text-gray-400 font-bold mt-1.5 uppercase">Authentic Seals Direct</div>
             </div>
           </div>
         </div>
@@ -109,22 +158,24 @@ export function ShopPage() {
           
           {/* Sidebar category filters (Desktop) */}
           <div className="p-6 bg-[#121215] border border-white/10 rounded-xl h-fit space-y-6 shadow-xl">
+            
+            {/* MAIN CATEGORIES Accordion List */}
             <div>
               <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-[#e60012] mb-4 flex items-center gap-1.5 border-b border-white/5 pb-2">
-                <Filter className="w-4 h-4 text-[#e60012]" /> CATEGORIES
+                <Filter className="w-4 h-4 text-[#e60012]" /> MASTER CATEGORY
               </h3>
               <div className="flex flex-col gap-2">
                 {[
                   { id: 'all', name: 'All Collectibles' },
-                  { id: 'pokemon-english', name: 'Pokémon English packs' },
-                  { id: 'pokemon-japanese', name: 'Pokémon Japanese packs' },
-                  { id: 'onepiece-english', name: 'One Piece English TCG' },
-                  { id: 'onepiece-japanese', name: 'One Piece Japanese TCG' },
-                  { id: 'action-fig', name: 'Anime figures' }
+                  { id: 'trading-cards', name: 'Trading Card Games' },
+                  { id: 'anime-figures', name: 'Figures & Plushies' },
+                  { id: 'comic-books', name: 'Comic Books 📚', status: 'soon' },
+                  { id: 'manga', name: 'Manga / Novels 📖', status: 'soon' },
+                  { id: 'accessories', name: 'Hobby Accessories 🛡️' }
                 ].map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => setCategoryAndGroup(cat.id, 'All Anime')}
+                    onClick={() => handleCategoryNav(cat.id)}
                     className={`w-full text-left px-4 py-2.5 rounded text-xs font-mono font-bold flex items-center justify-between transition-all cursor-pointer border ${
                       selectedCategory === cat.id
                         ? 'bg-[#e60012] border-[#e60012] text-white shadow-[0_0_10px_rgba(230,0,18,0.35)] font-black'
@@ -132,43 +183,219 @@ export function ShopPage() {
                     }`}
                   >
                     <span>{cat.name}</span>
-                    {selectedCategory === cat.id && <Check className="w-3.5 h-3.5 text-white" />}
+                    {cat.status === 'soon' ? (
+                      <span className="text-[7px] border border-white/10 px-1 py-0.25 rounded text-gray-500 font-bold uppercase">SOON</span>
+                    ) : (
+                      selectedCategory === cat.id && <Check className="w-3.5 h-3.5 text-white" />
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Sub-categorization for anime figures only */}
-            {selectedCategory === 'action-fig' && (
-              <div className="border-t border-white/5 pt-5">
-                <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-[#e60012] mb-3">
-                  FILTER BY ANIME
-                </h4>
-                <div className="flex flex-col gap-1.5">
-                  {ANIME_CATEGORIES.map((animeName) => (
-                    <button
-                      key={animeName}
-                      onClick={() => setCategoryAndGroup('action-fig', animeName)}
-                      className={`w-full text-left px-3.5 py-2 text-xs rounded transition-all cursor-pointer font-mono font-bold flex items-center justify-between ${
-                        selectedAnime === animeName
-                          ? 'bg-white/10 text-white border border-white/20'
-                          : 'text-gray-400 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      <span>- {animeName}</span>
-                      {selectedAnime === animeName && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#e60012] shadow-[0_0_5px_#e60012]"></span>
-                      )}
-                    </button>
-                  ))}
+            {/* NESTED FILTER 1: TRADING CARD GAMES SUB-CATEGORIES */}
+            {selectedCategory === 'trading-cards' && (
+              <div className="border-t border-white/5 pt-5 space-y-4">
+                <div>
+                  <h4 className="text-[10px] font-mono font-bold uppercase tracking-widest text-white mb-3">
+                    // CHOOSE TCG GAME
+                  </h4>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { id: 'pokemon', name: 'Pokémon' },
+                      { id: 'onepiece', name: 'One Piece' },
+                      { id: 'yugioh', name: 'Yu-Gi-Oh!' },
+                      { id: 'weiss-schwarz', name: 'Weiss Schwarz' },
+                      { id: 'mtg', name: 'Magic (MTG)' },
+                      { id: 'lorcana', name: 'Lorcana' },
+                      { id: 'digimon', name: 'Digimon' },
+                      { id: 'rift-bound', name: 'Rift Bound' }
+                    ].map((g) => (
+                      <button
+                        key={g.id}
+                        onClick={() => {
+                          setAdvancedFilters({
+                            subCategory: selectedSubCategory === g.id ? null : g.id,
+                            language: null // reset language filter on new game click
+                          });
+                        }}
+                        className={`text-[9px] font-mono p-1.5 font-bold rounded border text-left flex items-center justify-between transition-colors uppercase ${
+                          selectedSubCategory === g.id
+                            ? 'bg-white/10 border-white text-white'
+                            : 'bg-[#18181c] border-white/5 text-gray-400 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <span className="truncate">{g.name}</span>
+                        {selectedSubCategory === g.id && <ChevronRight className="w-3 h-3 text-[#e60012]" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sub-language filter dynamically bounded by user instructions */}
+                {selectedSubCategory && (
+                  <div className="pt-2 border-t border-white/5">
+                    <h5 className="text-[9px] font-mono font-bold uppercase tracking-wider text-gray-400 mb-2">
+                      Language Selector:
+                    </h5>
+                    <div className="flex flex-wrap gap-1">
+                      <button
+                        onClick={() => setAdvancedFilters({ language: null })}
+                        className={`text-[9px] font-bold px-2 py-1 rounded border ${
+                          !selectedLanguage 
+                            ? 'bg-[#e60012]/10 border-[#e60012] text-[#e60012]'
+                            : 'bg-[#18181c] border-white/5 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        All
+                      </button>
+                      
+                      {/* Determine allowed language options */}
+                      {(selectedSubCategory === 'pokemon' 
+                        ? ['EN', 'JP', 'CN', 'KR', 'Other']
+                        : selectedSubCategory === 'onepiece'
+                        ? ['EN', 'JP', 'KR']
+                        : (selectedSubCategory === 'weiss-schwarz' || selectedSubCategory === 'yugioh')
+                        ? ['EN', 'JP']
+                        : ['EN'] // others: english only
+                      ).map(lang => (
+                        <button
+                          key={lang}
+                          onClick={() => setAdvancedFilters({ language: lang })}
+                          className={`text-[9px] font-bold px-2 py-1 rounded border ${
+                            selectedLanguage === lang
+                              ? 'bg-[#e60012]/10 border-[#e60012] text-[#e60012]'
+                              : 'bg-[#18181c] border-white/5 text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          {lang}
+                        </button>
+                      ))}
+                    </div>
+                    {['pokemon', 'onepiece', 'weiss-schwarz', 'yugioh'].indexOf(selectedSubCategory) === -1 && (
+                      <span className="text-[8px] text-gray-400 font-mono mt-1 block">
+                        * English print editions only
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* NESTED FILTER 2: ANIME FIGURES & MANUFACTURERS FILTERS */}
+            {selectedCategory === 'anime-figures' && (
+              <div className="border-t border-white/5 pt-5 space-y-4">
+                <div>
+                  <h4 className="text-[10px] font-mono font-bold uppercase tracking-widest text-white mb-3">
+                    // MANUFACTURERS
+                  </h4>
+                  <div className="flex flex-col gap-1.5">
+                    {[
+                      { id: 'banpresto', name: 'Banpresto' },
+                      { id: 'kotobukiya', name: 'Kotobukiya' },
+                      { id: 'bandai', name: 'Bandai Spirits' },
+                      { id: 'good-smile', name: 'Good Smile Company' },
+                      { id: 'funko', name: 'Funko Pops' },
+                      { id: 'plushies', name: 'Official Plushies' }
+                    ].map((mfg) => (
+                      <button
+                        key={mfg.id}
+                        onClick={() => {
+                          setAdvancedFilters({
+                            subCategory: selectedSubCategory === mfg.id ? null : mfg.id,
+                            productLine: null // reset product lines on click
+                          });
+                        }}
+                        className={`w-full text-left px-3 py-2 text-xs rounded transition-all cursor-pointer font-mono font-bold flex items-center justify-between border ${
+                          selectedSubCategory === mfg.id
+                            ? 'bg-white/10 text-white border-white'
+                            : 'bg-[#18181c] border-white/5 text-gray-400 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <span>{mfg.name}</span>
+                        {selectedSubCategory === mfg.id && <span className="w-1.5 h-1.5 rounded-full bg-[#e60012]" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sub-product line options */}
+                {selectedSubCategory && (
+                  <div className="pt-2 border-t border-white/5">
+                    <h5 className="text-[9px] font-mono font-bold uppercase tracking-wider text-gray-400 mb-2">
+                      Famous Series Line:
+                    </h5>
+                    <div className="flex flex-wrap gap-1">
+                      <button
+                        onClick={() => setAdvancedFilters({ productLine: null })}
+                        className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded border ${
+                          !selectedProductLine 
+                            ? 'bg-[#e60012]/15 border-[#e60012] text-[#e60012]'
+                            : 'bg-[#18181c] border-white/5 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        All Lines
+                      </button>
+
+                      {(selectedSubCategory === 'banpresto'
+                        ? ['Ichibansho', 'Grandline Series', 'Vibration Stars']
+                        : selectedSubCategory === 'kotobukiya'
+                        ? ['ARTFX J', 'Bishoujo Statue']
+                        : selectedSubCategory === 'bandai'
+                        ? ['S.H.Figuarts', 'Figuarts ZERO']
+                        : selectedSubCategory === 'good-smile'
+                        ? ['Nendoroid', 'figma', 'POP UP PARADE']
+                        : selectedSubCategory === 'funko'
+                        ? ['Funko Pop!']
+                        : ['Plushies']
+                      ).map(pLine => (
+                        <button
+                          key={pLine}
+                          onClick={() => setAdvancedFilters({ productLine: pLine })}
+                          className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded border ${
+                            selectedProductLine === pLine
+                              ? 'bg-[#e60012]/15 border-[#e60012] text-[#e60012]'
+                              : 'bg-[#18181c] border-white/5 text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          {pLine}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Anime Series list */}
+                <div className="pt-2 border-t border-white/5">
+                  <h4 className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#e60012] mb-3">
+                    // FILTER BY ANIME
+                  </h4>
+                  <div className="flex flex-col gap-1.5">
+                    {ANIME_CATEGORIES.map((animeName) => (
+                      <button
+                        key={animeName}
+                        onClick={() => setCategoryAndGroup('anime-figures', animeName)}
+                        className={`w-full text-left px-3.5 py-1.5 text-xs rounded transition-all cursor-pointer font-mono font-bold flex items-center justify-between ${
+                          selectedAnime === animeName
+                            ? 'bg-white/5 text-white border-l-2 border-[#e60012] pl-2 font-black'
+                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <span>- {animeName}</span>
+                        {selectedAnime === animeName && (
+                          <span className="w-1 h-3 bg-[#e60012]"></span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
 
             <div className="border-t border-white/5 pt-5 text-center bg-[#18181c] p-3.5 rounded border border-white/5">
-              <span className="text-xl">📦</span>
-              <p className="text-[10px] text-gray-400 leading-normal mt-1.5 font-sans font-semibold">
-                Interested in full booster boxes or factory-sealed cases? Contact our customer support team for wholesale rates and custom requests.
+              <ShieldCheck className="w-6 h-6 text-[#10b981] mx-auto opacity-80" />
+              <p className="text-[10px] text-gray-300 leading-normal mt-1.5 font-sans font-semibold">
+                Akiba Hub Guarantee: 100% video-recorded unboxing verification and double seal customs audit prior to air cargo departure.
               </p>
             </div>
           </div>
@@ -183,7 +410,7 @@ export function ShopPage() {
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
                   type="text"
-                  placeholder="Search catalog..."
+                  placeholder="Search by Character, Anime or Franchise..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-[#18181c] border border-white/10 focus:border-[#e60012] rounded px-4 py-2 pl-10 text-xs font-semibold text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#e60012] font-mono transition-all"
@@ -192,63 +419,30 @@ export function ShopPage() {
 
               {/* Sorting options */}
               <div className="flex items-center gap-3 w-full sm:w-auto justify-end text-right font-mono text-xs">
-                <span className="text-gray-400 font-bold flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-[#e60012]" /> SORT BY:
+                <span className="text-gray-400 font-bold flex items-center gap-1.5 font-sans">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-[#e60012]" /> DEPARTURE SORT:
                 </span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="bg-[#18181c] border border-white/10 text-xs font-bold rounded px-3 py-2 text-white focus:outline-none focus:border-[#e60012] cursor-pointer transition-all"
                 >
-                  <option value="default">Newest Releases</option>
+                  <option value="default">Default Sort (Figures First)</option>
                   <option value="price-asc">Price: Low to High</option>
                   <option value="price-desc">Price: High to Low</option>
-                  <option value="rating-desc">Top Rated</option>
+                  <option value="rating-desc">Top Rated Outlets</option>
                 </select>
               </div>
             </div>
 
             {/* Catalog Grid list */}
             {sortedAndFilteredProducts.length === 0 ? (
-              PRODUCTS.length === 0 ? (
-                <div className="py-20 text-center bg-[#121215] border border-[#e60012]/30 rounded-2xl p-8 shadow-xl max-w-2xl mx-auto">
-                  <div className="inline-flex items-center justify-center p-3.5 bg-[#e60012]/15 border border-[#e60012] text-white rounded-full mb-5 animate-pulse">
-                    <Sparkles className="w-8 h-8 text-[#e60012]" />
-                  </div>
-                  <h3 className="text-lg font-bold text-white font-mono tracking-wider uppercase mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white via-red-500 to-white">
-                    STOCK CURRENTLY BEING IMPORTED
-                  </h3>
-                  <p className="text-xs text-gray-300 leading-relaxed max-w-md mx-auto font-sans font-medium">
-                    Our direct pipeline from Akihabara and Tokyo logistics hubs is currently active! We are importing brand new batches of factory-sealed Pokémon and One Piece booster packs, along with premium scale PVC figures.
-                  </p>
-                  <div className="mt-6 flex flex-col items-center justify-center gap-2">
-                    <div className="inline-flex items-center gap-2 py-1 px-3 bg-[#e60012]/10 border border-[#e60012]/30 rounded text-[10px] font-mono font-bold text-[#e60012]">
-                      <span className="w-2 h-2 rounded-full bg-[#e60012] animate-ping"></span>
-                      IMPORT IN PROGRESS // CUSTOMS VERIFICATION
-                    </div>
-                    <span className="text-[9px] text-gray-500 font-mono font-bold mt-1">
-                      Check back shortly for premium, unweighed mint stock uploads.
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="py-20 text-center bg-[#121215] border-2 border-dashed border-white/10 rounded-2xl p-6 shadow-xl">
-                  <SlidersHorizontal className="w-12 h-12 text-gray-500 mx-auto opacity-70 mb-3" />
-                  <h3 className="text-md font-bold text-white font-mono">No collectibles match search parameters</h3>
-                  <p className="text-xs text-gray-400 max-w-sm mx-auto mt-1">
-                    Adjust filter metrics or search query to find registered collectibles in Tokyo HQ.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setCategoryAndGroup('all');
-                    }}
-                    className="mt-6 px-4 py-2 bg-[#e60012] text-white rounded font-mono text-xs font-bold tracking-widest shadow-[0_0_12px_rgba(230,0,18,0.35)] cursor-pointer hover:bg-[#ff1e27] transition-all"
-                  >
-                    Reset All Filters
-                  </button>
-                </div>
-              )
+              <div className="py-20 text-center bg-[#121215] border border-white/10 rounded-2xl p-8 shadow-xl space-y-2">
+                <span className="text-4xl animate-pulse block">📦</span>
+                <h3 className="text-sm font-mono font-bold tracking-widest text-[#e60012] uppercase">
+                  Items are currently being imported
+                </h3>
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {sortedAndFilteredProducts.map((product) => {
@@ -268,30 +462,18 @@ export function ShopPage() {
                         />
 
                         {/* Badging overlay */}
-                        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 font-mono">
-                          {product.category === 'pokemon-english' && (
-                            <span className="bg-slate-950 border border-white/20 text-white font-bold text-[8px] px-2 py-0.5 rounded shadow">
-                              POKÉMON EN
+                        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 inline-flex font-mono">
+                          <span className="bg-slate-950 border border-white/20 text-gray-300 text-[8px] px-2 py-0.5 rounded font-black uppercase tracking-wider">
+                            {product.category.replace('-', ' ')}
+                          </span>
+                          {product.subCategory && (
+                            <span className="bg-slate-950 border border-[#e60012]/40 text-[#e60012] font-semibold text-[8px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">
+                              {product.subCategory}
                             </span>
                           )}
-                          {product.category === 'pokemon-japanese' && (
-                            <span className="bg-slate-950 border border-[#e60012]/40 text-[#e60012] font-bold text-[8px] px-2 py-0.5 rounded shadow">
-                              POKÉMON JPN
-                            </span>
-                          )}
-                          {product.category === 'onepiece-english' && (
-                            <span className="bg-slate-950 border border-white/20 text-white font-bold text-[8px] px-2 py-0.5 rounded shadow">
-                              ONE PIECE EN
-                            </span>
-                          )}
-                          {product.category === 'onepiece-japanese' && (
-                            <span className="bg-slate-950 border border-[#e60012]/40 text-[#e60012] font-bold text-[8px] px-2 py-0.5 rounded shadow">
-                              ONE PIECE JPN
-                            </span>
-                          )}
-                          {product.category === 'action-fig' && (
-                            <span className="bg-slate-950 border border-white/30 text-white font-bold text-[8px] px-2 py-0.5 rounded shadow">
-                              SCALE PVC
+                          {product.language && (
+                            <span className="bg-white text-slate-950 font-bold text-[8px] px-1.5 rounded w-fit text-center font-mono self-start mt-0.5">
+                              {product.language}
                             </span>
                           )}
                         </div>
@@ -306,7 +488,7 @@ export function ShopPage() {
                         <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center pointer-events-none group-hover:pointer-events-auto">
                           <button
                             id={`quick-view-${product.id}`}
-                            onClick={() => setSetSelectedQuickView(product)}
+                            onClick={() => setSelectedQuickView(product)}
                             className="bg-transparent text-white border border-white hover:bg-white hover:text-slate-950 px-4 py-2 rounded-md shadow-[0_0_15px_rgba(255,255,255,0.25)] transition-all cursor-pointer pointer-events-auto flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -317,11 +499,16 @@ export function ShopPage() {
 
                       {/* Content details and buy control button */}
                       <div className="p-4 flex-1 flex flex-col justify-between bg-[#121215]">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2">
+                        <div className="space-y-1.5 text-left">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             {product.anime && (
-                              <span className="text-[10px] font-bold text-[#e60012] font-mono">
+                              <span className="text-[9px] font-bold text-[#e60012] font-mono">
                                 // {product.anime.toUpperCase()}
+                              </span>
+                            )}
+                            {product.productLine && (
+                              <span className="text-[8px] font-semibold text-gray-400 font-mono border border-white/10 px-1 py-0.25 rounded uppercase">
+                                {product.productLine}
                               </span>
                             )}
                             {product.cardsPerPack && (
@@ -329,9 +516,6 @@ export function ShopPage() {
                                 {product.cardsPerPack} CARDS
                               </span>
                             )}
-                            <span className="text-[9px] text-gray-500 font-mono font-bold ml-auto">
-                              EST: {product.releaseYear}
-                            </span>
                           </div>
                           
                           <h3 className="text-xs font-bold text-white font-sans tracking-tight line-clamp-2 min-h-[32px] group-hover:text-[#e60012] transition-colors leading-relaxed">
@@ -340,8 +524,8 @@ export function ShopPage() {
                         </div>
 
                         <div className="pt-4 mt-3 border-t border-white/5 flex items-center justify-between font-mono">
-                          <div className="flex flex-col">
-                            <span className="text-[8px] text-gray-500 font-bold leading-none uppercase font-mono">AUTHENTIC</span>
+                          <div className="flex flex-col text-left">
+                            <span className="text-[8px] text-gray-500 font-bold leading-none uppercase">AUTHENTIC</span>
                             <span className="text-sm font-bold text-white leading-none mt-1">
                               ${product.price.toFixed(2)}
                             </span>
@@ -382,16 +566,16 @@ export function ShopPage() {
       </div>
 
       {/* Quick view modal */}
-      {setSelectedQuickView && (
-        <div className="fixed inset-0 z-55 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#000]/90 backdrop-blur-md" onClick={() => setSetSelectedQuickView(null)} />
+      {selectedQuickView && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-[#000]/90 backdrop-blur-md" onClick={() => setSelectedQuickView(null)} />
           
           <div className="relative w-full max-w-2xl bg-[#121215] border border-white/10 rounded-xl overflow-hidden p-6 shadow-[0_0_35px_rgba(0,0,0,0.8)] z-10 flex flex-col md:flex-row gap-6 text-white text-left">
             
             {/* Close button */}
             <button
               id="close-quickview"
-              onClick={() => setSetSelectedQuickView(null)}
+              onClick={() => setSelectedQuickView(null)}
               className="absolute top-4 right-4 p-1 rounded bg-[#18181c] hover:bg-[#e60012] hover:text-white text-white border border-white/10 transition-all cursor-pointer"
             >
               <X className="w-4 h-4" />
@@ -400,50 +584,63 @@ export function ShopPage() {
             {/* left column layout image */}
             <div className="w-full md:w-1/2 aspect-square rounded-lg bg-slate-950 border border-white/5 overflow-hidden flex-shrink-0 relative">
               <img
-                src={setSelectedQuickView.image}
-                alt={setSelectedQuickView.name}
+                src={selectedQuickView.image}
+                alt={selectedQuickView.name}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover filter brightness-95"
               />
               <span className="absolute bottom-3 left-3 bg-[#121215] border border-white/10 px-2 py-0.5 rounded text-[9px] font-mono text-white font-bold">
-                In Stock: {setSelectedQuickView.stock}
+                In Stock: {selectedQuickView.stock}
               </span>
             </div>
 
             {/* right column details info */}
             <div className="flex-1 flex flex-col justify-between">
               <div className="space-y-4">
-                <div className="flex items-center gap-2 font-mono">
+                <div className="flex flex-wrap items-center gap-2 font-mono">
                   <span className="text-[9px] bg-[#18181c] border border-[#e60012]/40 text-[#e60012] px-2.5 py-0.5 rounded uppercase font-bold">
-                    {setSelectedQuickView.category.replace('onepiece', 'One Piece').replace('pokemon', 'Pokémon').toUpperCase()}
+                    {selectedQuickView.category.replace('-', ' ').toUpperCase()}
                   </span>
-                  {setSelectedQuickView.anime && (
-                    <span className="text-[9px] bg-[#18181c] border border-white/20 text-white px-2.5 py-0.5 rounded font-bold">
-                      {setSelectedQuickView.anime.toUpperCase()}
+                  {selectedQuickView.subCategory && (
+                    <span className="text-[9px] bg-[#18181c] border border-white/30 text-white px-2.5 py-0.5 rounded uppercase font-bold">
+                      {selectedQuickView.subCategory}
+                    </span>
+                  )}
+                  {selectedQuickView.anime && (
+                    <span className="text-[9px] bg-[#18181c] border border-white/20 text-white px-2 py-0.5 rounded font-bold uppercase">
+                      {selectedQuickView.anime}
+                    </span>
+                  )}
+                  {selectedQuickView.productLine && (
+                    <span className="text-[9px] bg-[#18181c] border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">
+                      {selectedQuickView.productLine}
                     </span>
                   )}
                 </div>
 
                 <h2 className="text-md md:text-lg font-display font-medium text-white tracking-widest uppercase leading-snug">
-                  {setSelectedQuickView.name}
+                  {selectedQuickView.name}
                 </h2>
 
                 <div className="flex items-center gap-4 text-xs font-bold font-mono">
-                  <span className="text-[#e60012] font-black text-xl">${setSelectedQuickView.price.toFixed(2)}</span>
-                  <span className="text-[10px] text-gray-400 font-medium">Est Release: {setSelectedQuickView.releaseYear}</span>
+                  <span className="text-[#e60012] font-black text-xl">${selectedQuickView.price.toFixed(2)}</span>
+                  <span className="text-[10px] text-gray-400 font-medium">Est Release: {selectedQuickView.releaseYear}</span>
                 </div>
 
                 <p className="text-xs text-gray-300 leading-relaxed font-sans font-medium">
-                  {setSelectedQuickView.description}
+                  {selectedQuickView.description}
                 </p>
 
                 <div className="pt-2">
-                  <h4 className="text-[10px] font-mono text-white font-bold uppercase tracking-wider mb-2">PRODUCT HIGHLIGHTS</h4>
+                  <h4 className="text-[10px] font-mono text-white font-bold uppercase tracking-wider mb-2">PRODUCT SPEC DETAILS</h4>
                   <ul className="grid grid-cols-2 gap-2 text-[10px] font-mono text-gray-300">
-                    <li className="bg-[#18181c] p-1.5 rounded border border-white/5">🌟 Holofoil Probability: ~33%</li>
+                    <li className="bg-[#18181c] p-1.5 rounded border border-white/5">🌟 Authenticity Inspected</li>
                     <li className="bg-[#18181c] p-1.5 rounded border border-white/5">📦 Factory Sealed & Untampered</li>
-                    {setSelectedQuickView.cardsPerPack && (
-                      <li className="bg-[#18181c] p-1.5 rounded border border-white/5">🃏 Total Cards: {setSelectedQuickView.cardsPerPack}</li>
+                    {selectedQuickView.cardsPerPack && (
+                      <li className="bg-[#18181c] p-1.5 rounded border border-white/5">🃏 Total Cards: {selectedQuickView.cardsPerPack}</li>
+                    )}
+                    {selectedQuickView.character && (
+                      <li className="bg-[#18181c] p-1.5 rounded border border-white/5">👤 Hero: {selectedQuickView.character}</li>
                     )}
                     <li className="bg-[#18181c] p-1.5 rounded border border-white/5">🛡️ Ultimate Collector Packaging</li>
                   </ul>
@@ -452,10 +649,10 @@ export function ShopPage() {
 
               <div className="pt-6 border-t border-white/5 flex items-center gap-3 font-mono">
                 <button
-                  id={`quick-add-${setSelectedQuickView.id}`}
+                  id={`quick-add-${selectedQuickView.id}`}
                   onClick={() => {
-                    handleAddToCart(setSelectedQuickView);
-                    setSetSelectedQuickView(null);
+                    handleAddToCart(selectedQuickView);
+                    setSelectedQuickView(null);
                   }}
                   className="flex-1 py-3 bg-[#e60012] hover:bg-[#ff1e27] text-white text-xs font-bold rounded border border-[#e60012] tracking-widest flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(230,0,18,0.35)]"
                 >

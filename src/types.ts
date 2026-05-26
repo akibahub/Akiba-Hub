@@ -1,8 +1,13 @@
 export interface Product {
   id: string;
   name: string;
-  category: 'pokemon-english' | 'pokemon-japanese' | 'onepiece-english' | 'onepiece-japanese' | 'action-fig';
-  anime?: string; // for figures
+  category: 'anime-figures' | 'trading-cards' | 'comic-books' | 'manga' | 'accessories';
+  subCategory?: string; // 'pokemon', 'onepiece', 'mtg', 'weiss-schwarz', 'lorcana', 'digimon', 'rift-bound', 'yugioh', 'banpresto', 'kotobukiya', 'bandai', 'good-smile', 'funko', 'plushies'
+  productLine?: string; // e.g. 'Ichibansho', 'Grandline Series', 'Vibration Stars', 'Nendoroid', 'figma', 'POP UP PARADE', 'Funko Pop!', 'S.H.Figuarts', 'Figuarts ZERO', 'ARTFX J', 'Bishoujo Statue'
+  language?: 'EN' | 'JP' | 'CN' | 'KR' | 'Other'; // for TCG
+  anime?: string; // For figures & plushies
+  character?: string; // For search indexing
+  franchise?: string; // For search indexing
   price: number;
   image: string;
   description: string;

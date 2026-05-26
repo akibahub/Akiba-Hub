@@ -4,9 +4,12 @@ export const PRODUCTS: Product[] = [];
 
 export const ANIME_CATEGORIES = [
   'All Anime',
+  'Dragon Ball',
   'One Piece',
-  'Dragon Ball Z',
   'Naruto',
   'Demon Slayer',
-  'Jujutsu Kaisen'
+  'Jujutsu Kaisen',
+  'Chainsaw Man',
+  'Spy x Family',
+  'Attack on Titan'
 ];

@@ -53,7 +53,7 @@ export function LandingPage() {
               </h1>
               
               <p className="text-xs sm:text-sm text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-sans font-medium">
-                Akiba Hub bridges the electric energy of Tokyo's neon corridors directly to the UK collector scene. We supply the ultimate pipeline of authentic, unscaled Japanese TCG packs, pristine figures, and raw cultural grails—fully secured and swiftly delivered across continents.
+                Akiba Hub bridges the electric energy of Tokyo's neon corridors directly to the UK collector scene. We supply the ultimate pipeline of authentic, unscaled Japanese TCG booster sets, pristine figures, and raw cultural grails—fully secured and swiftly delivered across continents.
               </p>
 
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 font-mono">
@@ -101,7 +101,7 @@ export function LandingPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10" />
                 <img
                   src="https://images.unsplash.com/photo-1627856013091-fed6e4e30025?w=500&auto=format&fit=crop&q=80"
-                  alt="Pokemon card packs"
+                  alt="Pokémon TCG"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover filter brightness-90 group-hover:brightness-100 transition-all animate-[pulse_6s_infinite] group-hover:scale-105"
                 />
@@ -153,7 +153,7 @@ export function LandingPage() {
               title: 'Pokémon English',
               accent: 'border-white/10 hover:border-[#e60012] bg-[#121215] hover:shadow-[0_0_15px_rgba(230,0,18,0.2)]',
               img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80',
-              desc: 'English print packs with original silver foils.',
+              desc: 'English print Pokémon TCG with original silver foils.',
               badge: 'USA STANDARD',
               emoji: '⚡'
             },
@@ -252,20 +252,11 @@ export function LandingPage() {
           </div>
 
           {featuredProducts.length === 0 ? (
-            <div className="py-12 px-6 text-center bg-[#121215] border border-[#e60012]/30 rounded-xl p-8 max-w-2xl mx-auto shadow-xl">
-              <span className="text-3xl animate-pulse block mb-4">✈️</span>
-              <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wider mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white via-red-500 to-white">
-                THE STOCK IS CURRENTLY BEING IMPORTED
+            <div className="py-12 px-6 text-center bg-[#121215] border border-white/10 rounded-xl p-8 max-w-2xl mx-auto shadow-xl space-y-2">
+              <span className="text-3xl animate-pulse block">📦</span>
+              <h3 className="text-sm font-mono font-bold tracking-widest text-[#e60012] uppercase">
+                Items are currently being imported
               </h3>
-              <p className="text-xs text-gray-400 leading-relaxed max-w-md mx-auto font-sans font-medium">
-                Our team is currently clearing and cataloging a massive shipment of factory-sealed booster boxes and masterwork figures arriving direct from our Tokyo offices. Every item is undergoing strict authentication.
-              </p>
-              <div className="mt-6 flex items-center justify-center gap-2 max-w-xs mx-auto">
-                <div className="w-2.5 h-2.5 bg-[#e60012] rounded-full animate-ping"></div>
-                <span className="text-[10px] font-mono font-bold text-[#e60012] tracking-widest">
-                  IMPORT FLOW ACTIVE // AKIHABARA DIRECT
-                </span>
-              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
