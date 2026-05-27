@@ -107,10 +107,13 @@ export function Header() {
             </button>
 
             {/* shop with dropdown catalog category filter links */}
-            <div className="relative group">
+            <div 
+              className="relative group"
+              onMouseEnter={() => setIsProductsDropdownOpen(true)}
+              onMouseLeave={() => setIsProductsDropdownOpen(false)}
+            >
               <button
                 id="nav-shop-menu"
-                onMouseEnter={() => setIsProductsDropdownOpen(true)}
                 onClick={() => handleNavClick('shop')}
                 className={`flex items-center gap-1 text-xs font-bold tracking-widest uppercase transition-all duration-200 cursor-pointer ${
                   activeView === 'shop' ? 'text-[#e60012] glow-pink-text' : 'text-gray-400 hover:text-white'
@@ -120,11 +123,15 @@ export function Header() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isProductsDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {/* Mega Flyout dropdown menu */}
+              {/* Mega Flyout dropdown menu with transparent hover bridge */}
               <div
-                className="absolute left-1/2 -translate-x-[45%] mt-3 w-[880px] rounded-lg bg-[#121215] border border-[#e60012]/40 shadow-[0_10px_35px_rgba(0,0,0,0.8)] p-6 transition-all duration-250 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto text-white backdrop-blur-lg grid grid-cols-3 gap-6 text-left"
-                onMouseLeave={() => setIsProductsDropdownOpen(false)}
+                className={`absolute left-1/2 -translate-x-[45%] top-full pt-3 w-[880px] z-50 transition-all duration-200 text-white ${
+                  isProductsDropdownOpen
+                    ? 'opacity-100 scale-100 pointer-events-auto'
+                    : 'opacity-0 scale-95 pointer-events-none'
+                }`}
               >
+                <div className="rounded-lg bg-[#121215] border border-[#e60012]/40 shadow-[0_10px_35px_rgba(0,0,0,0.8)] p-6 backdrop-blur-lg grid grid-cols-3 gap-6 text-left">
                 {/* COLUMN 1: TRADING CARD GAMES */}
                 <div className="space-y-3.5 border-r border-white/5 pr-4">
                   <div className="text-[10px] font-mono font-bold tracking-widest text-[#e60012] pb-1 uppercase border-b border-white/5 flex items-center justify-between">
@@ -371,6 +378,7 @@ export function Header() {
                 </div>
               </div>
             </div>
+          </div>
 
             <button
               id="nav-about"
