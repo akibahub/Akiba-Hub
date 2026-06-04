@@ -1,15 +1,15 @@
 import React, { useState, useMemo } from 'react';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useShop } from '../context/ShopContext';
-import { ShippingDetails, Order } from '../types';
-import { Shield, ChevronRight, CheckCircle, CreditCard, ShoppingBag, Truck, Lock, Info, ExternalLink, Code2, AlertTriangle, AlertCircle, X } from 'lucide-react';
+import { ShippingDetails } from '../types';
+import { ChevronRight, CheckCircle, ShoppingBag, Lock, Info, ExternalLink, Code2 } from 'lucide-react';
 
 export function CheckoutFlow() {
   const {
     cart,
     setView,
     getCartSubtotal,
-    placeOrder,
-    currentOrder
+    placeOrder
   } = useShop();
 
   // Redirect to directory if cart is empty and not on receipt
@@ -36,20 +36,14 @@ export function CheckoutFlow() {
 
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof ShippingDetails, string>>>({});
   
-  // Custom PayPal sandbox simulator drawer/modal state
-  const [isPaypalModalOpen, setIsPaypalModalOpen] = useState(false);
-  const [paypalEmail, setPaypalEmail] = useState('buyer@akibahub.jp');
-  const [paypalPassword, setPaypalPassword] = useState('••••••••');
-  const [isProcessingPaypal, setIsProcessingPaypal] = useState(false);
-  const [paypalStep, setPaypalStep] = useState<'login' | 'review' | 'success'>('login');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Compute live subtotal details
   const subtotal = getCartSubtotal();
   const shippingCost = useMemo(() => {
-    if (formData.shippingMethod === 'express') return 14.99;
-    return subtotal >= 150 ? 0 : 5.95;
-  }, [subtotal, formData.shippingMethod]);
-  const taxCost = useMemo(() => subtotal * 0.08, [subtotal]); // 8% standard tax
+    return subtotal >= 50 ? 0 : 3.99;
+  }, [subtotal]);
+  const taxCost = useMemo(() => 0, []); // VAT/tax is handled server-side later if needed
   const totalCost = useMemo(() => subtotal + shippingCost + taxCost, [subtotal, shippingCost, taxCost]);
 
   // Handle address/details text changes
@@ -84,48 +78,6 @@ export function CheckoutFlow() {
     } else if (currentStep === 2 && validateStep(2)) {
       setCurrentStep(3);
     }
-  };
-
-  // Trigger simulated integrated PayPal buttons click
-  const handlePaypalClick = () => {
-    setIsPaypalModalOpen(true);
-    setPaypalStep('login');
-  };
-
-  // Complete simulated paypal login
-  const submitPaypalLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessingPaypal(true);
-    setTimeout(() => {
-      setIsProcessingPaypal(false);
-      setPaypalStep('review');
-    }, 1000);
-  };
-
-  // Authorize and capture payment
-  const confirmPaypalPayment = () => {
-    setIsProcessingPaypal(true);
-    setTimeout(() => {
-      setIsProcessingPaypal(false);
-      
-      // Build order details object
-      const mockCaptureId = 'PP-' + Math.random().toString(36).substring(2, 11).toUpperCase();
-      const mockOrder: Order = {
-        id: 'AKB-' + Math.floor(100000 + Math.random() * 900000).toString(),
-        items: [...cart],
-        shippingDetails: { ...formData },
-        subtotal,
-        shippingCost,
-        tax: taxCost,
-        total: totalCost,
-        paymentId: mockCaptureId,
-        date: new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }),
-        status: 'processing'
-      };
-
-      setIsPaypalModalOpen(false);
-      placeOrder(mockOrder);
-    }, 1500);
   };
 
   return (
@@ -352,7 +304,7 @@ export function CheckoutFlow() {
                           <span className="text-xs font-bold block text-white">STANDARD SHIPPING</span>
                           <span className="text-[9px] text-gray-400 block mt-1 leading-normal font-sans font-semibold">Tracked parcel delivery // 4 - 8 business days</span>
                           <span className="text-xs font-bold text-[#e60012] block mt-3">
-                            {subtotal >= 150 ? 'FREE DELIVERY' : '$5.95'}
+                            {subtotal >= 50 ? 'FREE DELIVERY' : '£3.99'}
                           </span>
                         </label>
 
@@ -361,14 +313,15 @@ export function CheckoutFlow() {
                             type="radio"
                             name="shippingMethod"
                             value="express"
-                            checked={formData.shippingMethod === 'express'}
-                            onChange={() => setFormData((prev) => ({ ...prev, shippingMethod: 'express' }))}
-                            className="absolute top-4 right-4 text-[#e60012] focus:ring-[#e60012] cursor-pointer"
+                            checked={false}
+                            disabled
+                            onChange={() => {}}
+                            className="absolute top-4 right-4 text-[#e60012] focus:ring-[#e60012] cursor-not-allowed"
                           />
                           <span className="text-xs font-bold block text-white">DHL EXPRESS INTERNATIONAL</span>
-                          <span className="text-[9px] text-gray-400 block mt-1 leading-normal font-sans font-semibold">Priority Air freight courier // 1 - 3 business days</span>
-                          <span className="text-xs font-bold text-[#e60012] block mt-3">
-                            $14.99
+                          <span className="text-[9px] text-gray-400 block mt-1 leading-normal font-sans font-semibold">Coming soon // standard shipping is active now</span>
+                          <span className="text-xs font-bold text-gray-500 block mt-3">
+                            UNAVAILABLE
                           </span>
                         </label>
                       </div>
@@ -422,29 +375,113 @@ export function CheckoutFlow() {
                           Click the smart payment cards below to authorize our integrated sandbox simulation. Works with mock developer test accounts safely.
                         </p>
 
-                        <div className="space-y-3 pt-4 max-w-xs mx-auto font-mono">
-                          {/* Rich interactive PayPal Button */}
-                          <button
-                            id="paypal-smart-button"
-                            onClick={handlePaypalClick}
-                            className="w-full bg-[#FFCB05] hover:bg-[#ebbb00] text-slate-950 font-black text-xs py-3 px-4 rounded border border-[#FFCB05] shadow-[0_0_8px_rgba(255,203,5,0.25)] cursor-pointer transition-all"
-                          >
-                            Pay with PayPal
-                          </button>
+                        <div className="space-y-3 pt-4 max-w-sm mx-auto font-mono">
+                          {paymentError && (
+                            <div className="bg-[#e60012]/10 border border-[#e60012]/40 text-[#ff6b73] rounded p-3 text-[10px] font-bold text-left">
+                              {paymentError}
+                            </div>
+                          )}
 
-                          <div className="flex items-center gap-2">
-                            <span className="w-full h-[1px] bg-white/10"></span>
-                            <span className="text-[9px] text-gray-500 font-bold">OR</span>
-                            <span className="w-full h-[1px] bg-white/10"></span>
-                          </div>
-
-                          <button
-                            id="debit-smart-button"
-                            onClick={handlePaypalClick}
-                            className="w-full bg-transparent text-white border border-white hover:bg-white hover:text-slate-950 font-bold text-xs py-2.5 px-4 rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          <PayPalScriptProvider
+                            options={{
+                              clientId: (import.meta as any).env.VITE_PAYPAL_CLIENT_ID || '',
+                              currency: 'GBP',
+                              intent: 'capture',
+                            }}
                           >
-                            <CreditCard className="w-4 h-4" /> DEBIT OR CREDIT CARD
-                          </button>
+                            <PayPalButtons
+                              style={{
+                                layout: 'vertical',
+                                color: 'gold',
+                                shape: 'rect',
+                                label: 'paypal',
+                              }}
+                              createOrder={async () => {
+                                setPaymentError(null);
+
+                                const safeCart = cart.map((item) => ({
+                                  id: item.product.id,
+                                  quantity: item.quantity,
+                                }));
+
+                                const response = await fetch('/api/paypal/create-order', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify({ cart: safeCart }),
+                                });
+
+                                const data = await response.json();
+
+                                if (!response.ok) {
+                                  const message = data.error || 'Failed to create PayPal order';
+                                  setPaymentError(message);
+                                  throw new Error(message);
+                                }
+
+                                return data.id;
+                              }}
+                              onApprove={async (data) => {
+                                setPaymentError(null);
+
+                                if (!data.orderID) {
+                                  const message = 'Missing PayPal order ID';
+                                  setPaymentError(message);
+                                  throw new Error(message);
+                                }
+
+                                const safeCart = cart.map((item) => ({
+                                  id: item.product.id,
+                                  quantity: item.quantity,
+                                }));
+
+                                const response = await fetch('/api/paypal/capture-order', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify({
+                                    orderId: data.orderID,
+                                    cart: safeCart,
+                                    customer: {
+                                      name: formData.fullName,
+                                      email: formData.email,
+                                    },
+                                  }),
+                                });
+
+                                const result = await response.json();
+
+                                if (!response.ok) {
+                                  const message = result.error || 'Failed to capture payment';
+                                  setPaymentError(message);
+                                  throw new Error(message);
+                                }
+
+                                placeOrder({
+                                  id: result.akibaOrderId,
+                                  items: [...cart],
+                                  shippingDetails: { ...formData },
+                                  subtotal: Number(result.calculatedOrder.subtotal),
+                                  shippingCost: Number(result.calculatedOrder.shipping),
+                                  tax: 0,
+                                  total: Number(result.calculatedOrder.total),
+                                  paymentId: result.captureId,
+                                  date: new Date().toLocaleDateString(undefined, {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                  }),
+                                  status: 'processing',
+                                });
+                              }}
+                              onError={(err) => {
+                                console.error('PayPal error:', err);
+                                setPaymentError('PayPal checkout failed. Please try again.');
+                              }}
+                            />
+                          </PayPalScriptProvider>
                         </div>
 
                         <div className="pt-2 text-[9px] text-gray-400 font-mono flex items-center justify-center gap-1.5 font-bold">
@@ -485,9 +522,9 @@ export function CheckoutFlow() {
                       <img src={item.product.image} alt={item.product.name} referrerPolicy="no-referrer" className="w-10 h-10 object-cover rounded border border-white/10 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <h4 className="text-[11px] font-bold text-white truncate font-sans">{item.product.name}</h4>
-                        <span className="text-[9px] font-mono text-gray-400 font-bold block mt-0.5">Qty: {item.quantity} × ${item.product.price.toFixed(2)}</span>
+                        <span className="text-[9px] font-mono text-gray-400 font-bold block mt-0.5">Qty: {item.quantity} × £{item.product.price.toFixed(2)}</span>
                       </div>
-                      <span className="text-[11px] font-mono font-bold text-white self-center">${(item.product.price * item.quantity).toFixed(2)}</span>
+                      <span className="text-[11px] font-mono font-bold text-white self-center">£{(item.product.price * item.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -496,21 +533,21 @@ export function CheckoutFlow() {
                 <div className="space-y-2.5 pt-4 border-t border-white/5 text-xs font-mono text-gray-400">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="text-white font-bold">${subtotal.toFixed(2)}</span>
+                    <span className="text-white font-bold">£{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping</span>
                     <span className="text-white font-bold">
-                      {shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}
+                      {shippingCost === 0 ? 'FREE' : `£${shippingCost.toFixed(2)}`}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Estimated Tax (8%)</span>
-                    <span className="text-white font-bold">${taxCost.toFixed(2)}</span>
+                    <span>Estimated Tax</span>
+                    <span className="text-white font-bold">£{taxCost.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between border-t border-white/10 pt-3 text-xs font-bold text-white">
                     <span>ORDER TOTAL</span>
-                    <span className="text-[#e60012] text-sm font-black">${totalCost.toFixed(2)}</span>
+                    <span className="text-[#e60012] text-sm font-black">£{totalCost.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -522,7 +559,7 @@ export function CheckoutFlow() {
                   <span className="text-xs font-bold uppercase tracking-wider">DEVELOPER INTEGRATION</span>
                 </div>
                 <p className="text-[10.5px] text-gray-300 font-semibold mb-3 leading-relaxed">
-                  This application features a fully sandboxed mock checkout process. To connect this checkout flow to your live PayPal Merchant Account, follow the integration checklist below:
+                  This checkout uses real PayPal buttons connected to your Vercel serverless endpoints. Test with PayPal Sandbox first, then switch your environment variables to live mode.
                 </p>
 
                 <div className="bg-[#18181c] p-3 rounded border border-white/5 font-mono text-[9px] text-gray-400 space-y-3">
@@ -557,139 +594,6 @@ export function CheckoutFlow() {
 
       </div>
 
-      {/* Embedded PayPal Simulation Popup screen */}
-      {isPaypalModalOpen && (
-        <div className="fixed inset-0 z-59 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#000]/90 backdrop-blur-md" />
-          
-          <div className="relative w-full max-w-md bg-white text-slate-950 rounded-xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] z-10 font-sans border border-slate-300 text-left">
-            
-            {/* Modal header simulating Paypal.com */}
-            <div className="bg-slate-100 p-4 border-b border-gray-250 flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                {/* Tiny iconic yellow/blue overlapping duplicate double P logo representation */}
-                <div className="font-sans italic font-black text-[#003087] text-lg select-none">
-                  Py<span className="text-[#0079C1]">Pl</span>
-                </div>
-                <span className="text-[10px] font-bold bg-slate-300/60 border border-slate-400 text-slate-700 font-mono rounded px-1.5 py-0.25 ml-2 uppercase">Sandbox Simulator</span>
-              </div>
-              <button
-                onClick={() => setIsPaypalModalOpen(false)}
-                className="p-1 hover:bg-slate-200 text-gray-500 hover:text-slate-950 rounded-full transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Inner PayPal flow contents */}
-            <div className="p-6 md:p-8">
-              
-              {/* Payment details header summary */}
-              <div className="mb-6 pb-4 border-b border-gray-150 text-center">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#0079C1] block font-sans">Authorizing payment to Akiba Hub</span>
-                <span className="text-3xl font-bold font-mono mt-1 block leading-none text-[#002B7A]">${totalCost.toFixed(2)}</span>
-                <span className="text-[10px] font-mono text-gray-500 block mt-1.5">Processed securely in USD</span>
-              </div>
-
-              {/* Loader overlay */}
-              {isProcessingPaypal ? (
-                <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
-                  <div className="w-10 h-10 border-4 border-[#0079C1] border-t-transparent rounded-full animate-spin"></div>
-                  <h4 className="text-sm font-semibold text-gray-700 font-sans">Processing payment authorization...</h4>
-                  <p className="text-[10.5px] text-gray-500 max-w-xs leading-relaxed font-sans">Thank you for your patience. Please do not refresh this page while we confirm your simulated credentials.</p>
-                </div>
-              ) : (
-                <>
-                  {/* Step A: Simulated Login Credentials required screen */}
-                  {paypalStep === 'login' && (
-                    <form onSubmit={submitPaypalLogin} className="space-y-4">
-                      
-                      <div className="bg-sky-50 p-3 rounded border border-sky-200 flex items-start gap-2 text-sky-950 font-sans">
-                        <AlertCircle className="w-4 h-4 text-[#0079C1] flex-shrink-0 mt-0.5" />
-                        <div className="text-[10px] leading-normal font-semibold">
-                          <span className="font-bold">Sandbox Mode Active:</span> use this simulated buyer profile to test the payment flow without incurring actual charges:
-                        </div>
-                      </div>
-
-                      <div className="space-y-3 font-sans">
-                        <div>
-                          <label className="block text-[11px] font-bold text-gray-600 mb-1">Mock PayPal Email ID</label>
-                          <input
-                            type="email"
-                            required
-                            value={paypalEmail}
-                            onChange={(e) => setPaypalEmail(e.target.value)}
-                            className="w-full bg-slate-50 border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#0079C1] text-slate-950 font-mono"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold text-gray-600 mb-1">Password</label>
-                          <input
-                            type="password"
-                            required
-                            value={paypalPassword}
-                            onChange={(e) => setPaypalPassword(e.target.value)}
-                            className="w-full bg-slate-50 border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#0079C1] text-slate-950"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full bg-[#0079C1] hover:bg-[#005E93] text-white font-bold text-xs py-2.5 rounded shadow cursor-pointer transition-colors font-sans"
-                      >
-                        Log In to Sandbox
-                      </button>
-                    </form>
-                  )}
-
-                  {/* Step B: Order Confirm/Verify screen */}
-                  {paypalStep === 'review' && (
-                    <div className="space-y-4 font-mono text-xs">
-                      
-                      <div className="bg-slate-150 bg-slate-50 p-3 rounded border border-gray-200 text-gray-700 space-y-1">
-                        <div className="flex justify-between">
-                          <span>Pay With:</span>
-                          <span className="font-bold text-slate-950">PayPal Balance</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Delivery Address:</span>
-                          <span className="text-right truncate max-w-[200px] font-bold text-slate-950">{formData.fullName}</span>
-                        </div>
-                        <div className="flex justify-between border-t border-gray-200 mt-2 pt-1 font-bold">
-                          <span>Order Total:</span>
-                          <span className="font-extrabold text-[#002B7A]">${totalCost.toFixed(2)}</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <button
-                          onClick={confirmPaypalPayment}
-                          className="w-full bg-[#FFC439] hover:bg-[#ebae25] text-slate-950 font-bold text-xs py-3 rounded-lg transition-all cursor-pointer shadow flex items-center justify-center gap-1 font-sans"
-                        >
-                          <CheckCircle className="w-4 h-4 text-[#003087]" /> Pay with PayPal & Complete Order
-                        </button>
-                        <button
-                          onClick={() => setPaypalStep('login')}
-                          className="w-full py-2 text-[10.5px] font-semibold text-gray-500 hover:text-slate-900 transition-colors font-sans block text-center"
-                        >
-                          Change login account
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Helpful footer notes representing Paypal security */}
-              <p className="text-[10px] text-gray-400 text-center mt-6 font-sans">
-                PayPal Sandbox Environment. Merchant account: <span className="text-gray-500 underline">merchant@akibahub.jp</span>.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      )}
 
     </div>
   );

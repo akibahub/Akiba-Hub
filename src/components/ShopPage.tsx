@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useShop } from '../context/ShopContext';
-import { PRODUCTS, ANIME_CATEGORIES } from '../data';
+import { ANIME_CATEGORIES } from '../data';
 import { Product } from '../types';
 import { Search, SlidersHorizontal, ShoppingCart, Star, HelpCircle, Eye, Check, X, Sparkles, Filter, ShieldCheck, ChevronRight } from 'lucide-react';
 
@@ -14,7 +14,10 @@ export function ShopPage() {
     selectedProductLine,
     setAdvancedFilters,
     setCategoryAndGroup,
-    cart
+    cart,
+    products,
+    loadingProducts,
+    productsError
   } = useShop();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,7 +27,7 @@ export function ShopPage() {
 
   // Filter products dynamically
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       // 1. Matches active category
       const matchCategory =
         selectedCategory === 'all' || product.category === selectedCategory;
@@ -436,11 +439,28 @@ export function ShopPage() {
             </div>
 
             {/* Catalog Grid list */}
-            {sortedAndFilteredProducts.length === 0 ? (
+            {loadingProducts ? (
+              <div className="py-20 text-center bg-[#121215]/50 border border-white/10 rounded-2xl p-8 shadow-xl space-y-4">
+                <div className="w-10 h-10 border-4 border-[#e60012] border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <h3 className="text-sm font-mono font-bold tracking-widest text-white uppercase">
+                  SYS: SYNCING_SHEETS_PRODUCT_CATALOG...
+                </h3>
+              </div>
+            ) : productsError ? (
+              <div className="py-20 text-center bg-[#121215] border border-[#e60012]/30 rounded-2xl p-8 shadow-xl space-y-3">
+                <span className="text-4xl block">📡</span>
+                <h3 className="text-sm font-mono font-bold tracking-widest text-[#e60012] uppercase">
+                  {productsError}
+                </h3>
+                <p className="text-xs text-gray-400 max-w-sm mx-auto font-sans font-medium">
+                  The central Customs and Verification Database is temporarily taking longer to respond. Please reboot your viewport or check back shortly.
+                </p>
+              </div>
+            ) : sortedAndFilteredProducts.length === 0 ? (
               <div className="py-20 text-center bg-[#121215] border border-white/10 rounded-2xl p-8 shadow-xl space-y-2">
                 <span className="text-4xl animate-pulse block">📦</span>
                 <h3 className="text-sm font-mono font-bold tracking-widest text-[#e60012] uppercase">
-                  Items are currently being imported
+                  No matching files found inside warehouse
                 </h3>
               </div>
             ) : (

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { PRODUCTS } from '../data';
 import { Sparkles, ArrowRight, ShieldCheck, Mail, Send, Trophy, Flame, Shield, HelpCircle, Check, Star } from 'lucide-react';
 
 export function LandingPage() {
-  const { setCategoryAndGroup, setView, addToCart } = useShop();
+  const { setCategoryAndGroup, setView, addToCart, products, loadingProducts, productsError } = useShop();
 
   // Contact us form states
   const [contactForm, setContactForm] = useState({
@@ -24,7 +23,7 @@ export function LandingPage() {
   };
 
   // Pre-filter featured products
-  const featuredProducts = PRODUCTS.filter((p) => p.featured).slice(0, 4);
+  const featuredProducts = React.useMemo(() => products.filter((p) => p.featured).slice(0, 4), [products]);
 
   return (
     <div className="space-y-24 pb-20">
@@ -251,11 +250,28 @@ export function LandingPage() {
             </button>
           </div>
 
-          {featuredProducts.length === 0 ? (
+          {loadingProducts ? (
+            <div className="py-12 px-6 text-center bg-[#121215]/50 border border-white/10 rounded-xl p-8 max-w-2xl mx-auto shadow-xl space-y-3">
+              <div className="w-8 h-8 border-3 border-[#e60012] border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <h3 className="text-sm font-mono font-bold tracking-widest text-white uppercase">
+                SYS: SYNCING_SHEETS_PRODUCT_CATALOG...
+              </h3>
+            </div>
+          ) : productsError ? (
+            <div className="py-12 px-6 text-center bg-[#121215] border border-[#e60012]/30 rounded-xl p-8 max-w-2xl mx-auto shadow-xl space-y-2">
+              <span className="text-3xl block">📡</span>
+              <h3 className="text-sm font-mono font-bold tracking-widest text-[#e60012] uppercase">
+                {productsError}
+              </h3>
+              <p className="text-[10px] text-gray-400 font-sans max-w-sm mx-auto font-medium">
+                The central customs database is temporarily taking longer to respond. Please reboot your viewport or check back shortly.
+              </p>
+            </div>
+          ) : featuredProducts.length === 0 ? (
             <div className="py-12 px-6 text-center bg-[#121215] border border-white/10 rounded-xl p-8 max-w-2xl mx-auto shadow-xl space-y-2">
               <span className="text-3xl animate-pulse block">📦</span>
               <h3 className="text-sm font-mono font-bold tracking-widest text-[#e60012] uppercase">
-                Items are currently being imported
+                No featured items found inside warehouse
               </h3>
             </div>
           ) : (

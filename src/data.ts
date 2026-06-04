@@ -1,7 +1,5 @@
 import { Product } from './types';
 
-export const PRODUCTS: Product[] = [];
-
 export const ANIME_CATEGORIES = [
   'All Anime',
   'Dragon Ball',
@@ -13,3 +11,4 @@ export const ANIME_CATEGORIES = [
   'Spy x Family',
   'Attack on Titan'
 ];
+

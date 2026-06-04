@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, CartItem, Order, ShippingDetails } from '../types';
 
 interface ShopContextType {
+  products: Product[];
+  loadingProducts: boolean;
+  productsError: string | null;
   cart: CartItem[];
   isCartOpen: boolean;
   activeView: 'landing' | 'shop' | 'checkout' | 'order-success';
@@ -35,6 +38,37 @@ interface ShopContextType {
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
 export function ShopProvider({ children }: { children: React.ReactNode }) {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setLoadingProducts(true);
+        setProductsError(null);
+
+        const response = await fetch('/api/products');
+        if (!response.ok) {
+          throw new Error('Local dev server/sheets returned failure code');
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else {
+          throw new Error('Invalid products data format received');
+        }
+      } catch (error) {
+        console.error('API / Sheets error:', error);
+        setProducts([]);
+        setProductsError('Products temporarily unavailable');
+      } finally {
+        setLoadingProducts(false);
+      }
+    }
+    loadProducts();
+  }, []);
+
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('akiba_hub_cart');
     return saved ? JSON.parse(saved) : [];
@@ -179,6 +213,9 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   return (
     <ShopContext.Provider
       value={{
+        products,
+        loadingProducts,
+        productsError,
         cart,
         isCartOpen,
         activeView,
