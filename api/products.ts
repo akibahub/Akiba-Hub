@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getProductsFromSheet } from "./_lib/googleSheets";
+import { getProductsFromSheet } from "./_lib/googleSheets.js";
 
 let cachedProducts: unknown = null;
 let cacheTime = 0;

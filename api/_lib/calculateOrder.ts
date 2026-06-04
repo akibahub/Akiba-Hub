@@ -1,4 +1,4 @@
-import { getProductsFromSheet } from "./googleSheets";
+import { getProductsFromSheet } from "./googleSheets.js";
 
 export type CartRequestItem = {
   id: string;

@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createPayPalOrder } from "../_lib/paypal";
+import { createPayPalOrder } from "../_lib/paypal.js";
 import {
   calculateTrustedOrder,
   isValidCartItem,
-} from "../_lib/calculateOrder";
+} from "../_lib/calculateOrder.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
