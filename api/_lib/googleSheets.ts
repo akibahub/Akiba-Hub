@@ -113,7 +113,7 @@ export async function appendOrderItemsToSheet(
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "OrderItems!A:F",
+    range: "OrderItems!A:R",
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: items.map((item) => [

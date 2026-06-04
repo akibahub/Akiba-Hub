@@ -25,6 +25,12 @@ export function ShopPage() {
   const [selectedQuickView, setSelectedQuickView] = useState<Product | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
+  const getSafeString = (value: unknown, fallback = '') => String(value ?? fallback);
+  const getSafeNumber = (value: unknown, fallback = 0) => {
+    const numberValue = Number(value);
+    return Number.isFinite(numberValue) ? numberValue : fallback;
+  };
+
   // Filter products dynamically
   const filteredProducts = useMemo(() => {
     return (Array.isArray(products) ? products : []).filter((product) => {
@@ -54,7 +60,7 @@ export function ShopPage() {
       const query = searchQuery.toLowerCase().trim();
       const matchSearch =
         !query ||
-        product.name.toLowerCase().includes(query) ||
+        getSafeString(product.name).toLowerCase().includes(query) ||
         (product.description || '').toLowerCase().includes(query) ||
         (product.anime && product.anime.toLowerCase().includes(query)) ||
         (product.character && product.character.toLowerCase().includes(query)) ||
@@ -70,13 +76,13 @@ export function ShopPage() {
   const sortedAndFilteredProducts = useMemo(() => {
     const list = [...filteredProducts];
     if (sortBy === 'price-asc') {
-      return list.sort((a, b) => a.price - b.price);
+      return list.sort((a, b) => getSafeNumber(a.price) - getSafeNumber(b.price));
     }
     if (sortBy === 'price-desc') {
-      return list.sort((a, b) => b.price - a.price);
+      return list.sort((a, b) => getSafeNumber(b.price) - getSafeNumber(a.price));
     }
     if (sortBy === 'rating-desc') {
-      return list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+      return list.sort((a, b) => getSafeNumber(b.rating, 0) - getSafeNumber(a.rating, 0));
     }
     
     // DEFAULT sorting: Anime Figures first, then Alphabetically by name
@@ -86,7 +92,7 @@ export function ShopPage() {
       if (aIsFigure && !bIsFigure) return -1;
       if (!aIsFigure && bIsFigure) return 1;
       // alphabetical
-      return a.name.localeCompare(b.name);
+      return getSafeString(a.name).localeCompare(getSafeString(b.name));
     });
   }, [filteredProducts, sortBy]);
 
@@ -476,7 +482,7 @@ export function ShopPage() {
                       <div className="relative aspect-4/3 overflow-hidden bg-slate-950 border-b border-white/5">
                         <img
                           src={product.image}
-                          alt={product.name}
+                          alt={getSafeString(product.name, 'Unnamed product')}
                           referrerPolicy="no-referrer"
                           className="w-full h-full object-cover filter brightness-90 group-hover:brightness-100 group-hover:scale-102 transition-all duration-500"
                         />
@@ -484,7 +490,7 @@ export function ShopPage() {
                         {/* Badging overlay */}
                         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 inline-flex font-mono">
                           <span className="bg-slate-950 border border-white/20 text-gray-300 text-[8px] px-2 py-0.5 rounded font-black uppercase tracking-wider">
-                            {product.category.replace('-', ' ')}
+                            {getSafeString(product.category, 'product').replace('-', ' ')}
                           </span>
                           {product.subCategory && (
                             <span className="bg-slate-950 border border-[#e60012]/40 text-[#e60012] font-semibold text-[8px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">
@@ -501,7 +507,7 @@ export function ShopPage() {
                         {/* Rating overlay badge */}
                         <div className="absolute top-3 right-3 z-10 bg-[#121215]/95 backdrop-blur-sm text-white px-2 py-0.5 rounded-md text-[8px] font-mono font-bold flex items-center gap-1 border border-white/10 shadow-sm">
                           <Star className="w-2.5 h-2.5 fill-[#e60012] stroke-[#e60012]" />
-                          {product.rating.toFixed(1)}
+                          {getSafeNumber(product.rating, 5).toFixed(1)}
                         </div>
 
                         {/* Quick View trigger button overlay on hover */}
@@ -539,7 +545,7 @@ export function ShopPage() {
                           </div>
                           
                           <h3 className="text-xs font-bold text-white font-sans tracking-tight line-clamp-2 min-h-[32px] group-hover:text-[#e60012] transition-colors leading-relaxed">
-                            {product.name}
+                            {getSafeString(product.name, 'Unnamed product')}
                           </h3>
                         </div>
 
@@ -547,7 +553,7 @@ export function ShopPage() {
                           <div className="flex flex-col text-left">
                             <span className="text-[8px] text-gray-500 font-bold leading-none uppercase">AUTHENTIC</span>
                             <span className="text-sm font-bold text-white leading-none mt-1">
-                              ${product.price.toFixed(2)}
+                              £{getSafeNumber(product.price).toFixed(2)}
                             </span>
                           </div>
 
@@ -605,7 +611,7 @@ export function ShopPage() {
             <div className="w-full md:w-1/2 aspect-square rounded-lg bg-slate-950 border border-white/5 overflow-hidden flex-shrink-0 relative">
               <img
                 src={selectedQuickView.image}
-                alt={selectedQuickView.name}
+                alt={getSafeString(selectedQuickView.name, 'Unnamed product')}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover filter brightness-95"
               />
@@ -639,16 +645,16 @@ export function ShopPage() {
                 </div>
 
                 <h2 className="text-md md:text-lg font-display font-medium text-white tracking-widest uppercase leading-snug">
-                  {selectedQuickView.name}
+                  {getSafeString(selectedQuickView.name, 'Unnamed product')}
                 </h2>
 
                 <div className="flex items-center gap-4 text-xs font-bold font-mono">
-                  <span className="text-[#e60012] font-black text-xl">${selectedQuickView.price.toFixed(2)}</span>
+                  <span className="text-[#e60012] font-black text-xl">£{getSafeNumber(selectedQuickView.price).toFixed(2)}</span>
                   <span className="text-[10px] text-gray-400 font-medium">Est Release: {selectedQuickView.releaseYear}</span>
                 </div>
 
                 <p className="text-xs text-gray-300 leading-relaxed font-sans font-medium">
-                  {selectedQuickView.description}
+                  {getSafeString(selectedQuickView.description, 'Japanese collectible product.')}
                 </p>
 
                 <div className="pt-2">
