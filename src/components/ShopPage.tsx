@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useShop } from '../context/ShopContext';
 import { ANIME_CATEGORIES } from '../data';
 import { Product } from '../types';
@@ -27,7 +27,7 @@ export function ShopPage() {
 
   // Filter products dynamically
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    return (Array.isArray(products) ? products : []).filter((product) => {
       // 1. Matches active category
       const matchCategory =
         selectedCategory === 'all' || product.category === selectedCategory;
@@ -55,7 +55,7 @@ export function ShopPage() {
       const matchSearch =
         !query ||
         product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query) ||
+        (product.description || '').toLowerCase().includes(query) ||
         (product.anime && product.anime.toLowerCase().includes(query)) ||
         (product.character && product.character.toLowerCase().includes(query)) ||
         (product.franchise && product.franchise.toLowerCase().includes(query)) ||
@@ -64,7 +64,7 @@ export function ShopPage() {
 
       return matchCategory && matchSubCategory && matchLanguage && matchProductLine && matchAnime && matchSearch;
     });
-  }, [selectedCategory, selectedSubCategory, selectedLanguage, selectedProductLine, selectedAnime, searchQuery]);
+  }, [products, selectedCategory, selectedSubCategory, selectedLanguage, selectedProductLine, selectedAnime, searchQuery]);
 
   // Sort products
   const sortedAndFilteredProducts = useMemo(() => {
@@ -76,7 +76,7 @@ export function ShopPage() {
       return list.sort((a, b) => b.price - a.price);
     }
     if (sortBy === 'rating-desc') {
-      return list.sort((a, b) => b.rating - a.rating);
+      return list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     }
     
     // DEFAULT sorting: Anime Figures first, then Alphabetically by name
