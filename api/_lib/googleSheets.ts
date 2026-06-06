@@ -110,9 +110,10 @@ export async function appendOrderToSheet(order: {
   const sheets = getSheetsClient();
 
   await sheets.spreadsheets.values.append({
-    spreadsheetId,
+    spreadsheetId: getOrdersSpreadsheetId(),
     range: "Orders!A:P",
-    valueInputOption: "USER_ENTERED",
+    valueInputOption: "RAW",
+    insertDataOption: "INSERT_ROWS",
     requestBody: {
       values: [
         [
@@ -121,15 +122,15 @@ export async function appendOrderToSheet(order: {
           order.captureId,
           order.customerName,
           order.email,
-          order.phone,
+          String(order.phone ?? "").trim(),
           order.address1,
           order.address2,
           order.city,
           order.postcode,
           order.country,
-          order.subtotal,
-          order.shipping,
-          order.total,
+          Number(order.subtotal),
+          Number(order.shipping),
+          Number(order.total),
           order.status,
           order.createdAt,
         ],
