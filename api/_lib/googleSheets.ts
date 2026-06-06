@@ -39,6 +39,7 @@ export async function getProductsFromSheet(): Promise<SheetProduct[]> {
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range: "Products!A:J",
+    valueRenderOption: "UNFORMATTED_VALUE",
   });
 
   const rows = response.data.values || [];
@@ -48,7 +49,7 @@ export async function getProductsFromSheet(): Promise<SheetProduct[]> {
     .map((row) => ({
       id: String(row[0] || "").trim(),
       name: String(row[1] || "").trim(),
-      price: Number(row[2]),
+      price: Number(row[2]) || 0,
       stock: Number(row[3]),
       image: String(row[4] || "").trim(),
       category: String(row[5] || "").trim(),
