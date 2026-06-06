@@ -447,6 +447,12 @@ export function CheckoutFlow() {
                                     customer: {
                                       name: formData.fullName,
                                       email: formData.email,
+                                      phone: formData.phone,
+                                      address1: formData.addressLine1,
+                                      address2: formData.addressLine2 || '',
+                                      city: formData.city,
+                                      postcode: formData.postalCode,
+                                      country: formData.country,
                                     },
                                   }),
                                 });

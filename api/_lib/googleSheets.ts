@@ -13,6 +13,18 @@ export type SheetProduct = {
   active: boolean;
 };
 
+function getProductSpreadsheetId(): string {
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) throw new Error("Missing GOOGLE_SHEET_ID");
+  return spreadsheetId;
+}
+
+function getOrdersSpreadsheetId(): string {
+  const spreadsheetId = process.env.GOOGLE_ORDERS_SHEET_ID;
+  if (!spreadsheetId) throw new Error("Missing GOOGLE_ORDERS_SHEET_ID");
+  return spreadsheetId;
+}
+
 function getSheetsClient() {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
@@ -31,9 +43,7 @@ function getSheetsClient() {
 }
 
 export async function getProductsFromSheet(): Promise<SheetProduct[]> {
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-  if (!spreadsheetId) throw new Error("Missing GOOGLE_SHEET_ID");
-
+  const spreadsheetId = getProductSpreadsheetId();
   const sheets = getSheetsClient();
 
   const response = await sheets.spreadsheets.values.get({
@@ -47,18 +57,35 @@ export async function getProductsFromSheet(): Promise<SheetProduct[]> {
 
   return dataRows
     .map((row) => ({
-      id: String(row[0] || "").trim(),
-      name: String(row[1] || "").trim(),
+      id: String(row[0] ?? "").trim(),
+      name: String(row[1] ?? "").trim(),
       price: Number(row[2]) || 0,
-      stock: Number(row[3]),
-      image: String(row[4] || "").trim(),
-      category: String(row[5] || "").trim(),
-      subCategory: String(row[6] || "").trim(),
-      language: String(row[7] || "").trim(),
-      featured: String(row[8]).toUpperCase() === "TRUE",
-      active: String(row[9]).toUpperCase() === "TRUE",
+      stock: Number(row[3]) || 0,
+      image: String(row[4] ?? "").trim(),
+      category: String(row[5] ?? "").trim(),
+      subCategory: String(row[6] ?? "").trim(),
+      language: String(row[7] ?? "").trim(),
+      featured: String(row[8] ?? "").trim().toUpperCase() === "TRUE",
+      active: String(row[9] ?? "").trim().toUpperCase() === "TRUE",
     }))
     .filter((p) => p.id && p.active);
+}
+
+export async function orderAlreadySaved(captureId: string): Promise<boolean> {
+  if (!captureId) return false;
+  const spreadsheetId = getOrdersSpreadsheetId();
+  const sheets = getSheetsClient();
+  try {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Orders!C2:C",
+    });
+    const rows = response.data.values || [];
+    return rows.some((row) => String(row[0] || "").trim() === captureId);
+  } catch (error) {
+    console.error("Error checking orderAlreadySaved:", error);
+    return false;
+  }
 }
 
 export async function appendOrderToSheet(order: {
@@ -67,18 +94,24 @@ export async function appendOrderToSheet(order: {
   captureId: string;
   customerName: string;
   email: string;
+  phone: string;
+  address1: string;
+  address2: string;
+  city: string;
+  postcode: string;
+  country: string;
+  subtotal: string;
+  shipping: string;
   total: string;
   status: string;
   createdAt: string;
 }) {
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-  if (!spreadsheetId) throw new Error("Missing GOOGLE_SHEET_ID");
-
+  const spreadsheetId = getOrdersSpreadsheetId();
   const sheets = getSheetsClient();
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Orders!A:H",
+    range: "Orders!A:P",
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [
@@ -88,6 +121,14 @@ export async function appendOrderToSheet(order: {
           order.captureId,
           order.customerName,
           order.email,
+          order.phone,
+          order.address1,
+          order.address2,
+          order.city,
+          order.postcode,
+          order.country,
+          order.subtotal,
+          order.shipping,
           order.total,
           order.status,
           order.createdAt,
@@ -107,14 +148,12 @@ export async function appendOrderItemsToSheet(
     lineTotal: number;
   }[]
 ) {
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-  if (!spreadsheetId) throw new Error("Missing GOOGLE_SHEET_ID");
-
+  const spreadsheetId = getOrdersSpreadsheetId();
   const sheets = getSheetsClient();
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "OrderItems!A:R",
+    range: "OrderItems!A:F",
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: items.map((item) => [

@@ -7,6 +7,7 @@ import {
 import {
   appendOrderToSheet,
   appendOrderItemsToSheet,
+  orderAlreadySaved,
 } from "../_lib/googleSheets.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -42,20 +43,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const captureId =
       capture.purchase_units?.[0]?.payments?.captures?.[0]?.id || "";
 
-    const akibaOrderId = `AKIBA-${Date.now()}`;
+    if (!captureId) {
+      return res.status(400).json({ error: "No capture ID found from PayPal" });
+    }
+
+    // Verify the captured amount matches the backend-calculated total
+    const capturedAmount =
+      capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || "";
+
+    if (Number(capturedAmount).toFixed(2) !== Number(calculatedOrder.total).toFixed(2)) {
+      return res.status(400).json({
+        error: `Captured amount (${capturedAmount}) does not match trusted total (${calculatedOrder.total})`,
+      });
+    }
+
+    // Prevent duplicate spreadsheet rows by checking captureId
+    const alreadySaved = await orderAlreadySaved(captureId);
+    if (alreadySaved) {
+      console.warn(`Order with capture ID ${captureId} is already saved. Skipping duplicate save.`);
+      return res.status(200).json({
+        status: capture.status,
+        paypalOrderId: capture.id,
+        captureId,
+        akibaOrderId: `AKIBA-DUPLICATE-${captureId}`,
+        calculatedOrder,
+      });
+    }
+
+    const akibaOrderId = `AKIBA-${Date.now()}-${captureId.slice(-6)}`;
     const createdAt = new Date().toISOString();
 
+    // Save the main order to the separate order spreadsheet
     await appendOrderToSheet({
       orderId: akibaOrderId,
       paypalOrderId: capture.id,
       captureId,
       customerName: customer?.name || "",
       email: customer?.email || "",
+      phone: customer?.phone || "",
+      address1: customer?.address1 || "",
+      address2: customer?.address2 || "",
+      city: customer?.city || "",
+      postcode: customer?.postcode || "",
+      country: customer?.country || "",
+      subtotal: calculatedOrder.subtotal,
+      shipping: calculatedOrder.shipping,
       total: calculatedOrder.total,
       status: "processing",
       createdAt,
     });
 
+    // Save each product line to the separate order spreadsheet
     await appendOrderItemsToSheet(
       calculatedOrder.items.map((item) => ({
         orderId: akibaOrderId,
@@ -75,6 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       calculatedOrder,
     });
   } catch (error) {
+    console.error("Capture and save order error:", error);
     const message =
       error instanceof Error ? error.message : "Failed to capture order";
 

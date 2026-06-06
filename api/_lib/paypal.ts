@@ -28,7 +28,12 @@ async function getPayPalAccessToken(): Promise<string> {
   return data.access_token;
 }
 
-export async function createPayPalOrder(total: string) {
+export async function createPayPalOrder(
+  items: { id: string; name: string; price: number; quantity: number }[],
+  subtotal: string,
+  shipping: string,
+  total: string
+) {
   const accessToken = await getPayPalAccessToken();
 
   const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
@@ -44,7 +49,27 @@ export async function createPayPalOrder(total: string) {
           amount: {
             currency_code: "GBP",
             value: total,
+            breakdown: {
+              item_total: {
+                currency_code: "GBP",
+                value: subtotal,
+              },
+              shipping: {
+                currency_code: "GBP",
+                value: shipping,
+              },
+            },
           },
+          items: items.map((item) => ({
+            name: item.name,
+            sku: item.id,
+            quantity: String(item.quantity),
+            category: "PHYSICAL_GOODS",
+            unit_amount: {
+              currency_code: "GBP",
+              value: Number(item.price).toFixed(2),
+            },
+          })),
         },
       ],
     }),

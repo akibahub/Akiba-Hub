@@ -22,7 +22,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const calculatedOrder = await calculateTrustedOrder(cart);
-    const paypalOrder = await createPayPalOrder(calculatedOrder.total);
+    const paypalOrder = await createPayPalOrder(
+      calculatedOrder.items,
+      calculatedOrder.subtotal,
+      calculatedOrder.shipping,
+      calculatedOrder.total
+    );
 
     return res.status(200).json({
       id: paypalOrder.id,
