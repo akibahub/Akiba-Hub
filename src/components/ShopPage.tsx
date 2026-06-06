@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useShop } from '../context/ShopContext';
 import { ANIME_CATEGORIES } from '../data';
 import { Product } from '../types';
@@ -25,15 +25,9 @@ export function ShopPage() {
   const [selectedQuickView, setSelectedQuickView] = useState<Product | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
-  const getSafeString = (value: unknown, fallback = '') => String(value ?? fallback);
-  const getSafeNumber = (value: unknown, fallback = 0) => {
-    const numberValue = Number(value);
-    return Number.isFinite(numberValue) ? numberValue : fallback;
-  };
-
   // Filter products dynamically
   const filteredProducts = useMemo(() => {
-    return (Array.isArray(products) ? products : []).filter((product) => {
+    return products.filter((product) => {
       // 1. Matches active category
       const matchCategory =
         selectedCategory === 'all' || product.category === selectedCategory;
@@ -61,28 +55,28 @@ export function ShopPage() {
       const matchSearch =
         !query ||
         getSafeString(product.name).toLowerCase().includes(query) ||
-        (product.description || '').toLowerCase().includes(query) ||
-        (product.anime && product.anime.toLowerCase().includes(query)) ||
-        (product.character && product.character.toLowerCase().includes(query)) ||
-        (product.franchise && product.franchise.toLowerCase().includes(query)) ||
-        (product.subCategory && product.subCategory.toLowerCase().includes(query)) ||
-        (product.productLine && product.productLine.toLowerCase().includes(query));
+        getSafeString(product.description).toLowerCase().includes(query) ||
+        getSafeString(product.anime).toLowerCase().includes(query) ||
+        getSafeString(product.character).toLowerCase().includes(query) ||
+        getSafeString(product.franchise).toLowerCase().includes(query) ||
+        getSafeString(product.subCategory).toLowerCase().includes(query) ||
+        getSafeString(product.productLine).toLowerCase().includes(query);
 
       return matchCategory && matchSubCategory && matchLanguage && matchProductLine && matchAnime && matchSearch;
     });
-  }, [products, selectedCategory, selectedSubCategory, selectedLanguage, selectedProductLine, selectedAnime, searchQuery]);
+  }, [selectedCategory, selectedSubCategory, selectedLanguage, selectedProductLine, selectedAnime, searchQuery]);
 
   // Sort products
   const sortedAndFilteredProducts = useMemo(() => {
     const list = [...filteredProducts];
     if (sortBy === 'price-asc') {
-      return list.sort((a, b) => getSafeNumber(a.price) - getSafeNumber(b.price));
+      return list.sort((a, b) => a.price - b.price);
     }
     if (sortBy === 'price-desc') {
-      return list.sort((a, b) => getSafeNumber(b.price) - getSafeNumber(a.price));
+      return list.sort((a, b) => b.price - a.price);
     }
     if (sortBy === 'rating-desc') {
-      return list.sort((a, b) => getSafeNumber(b.rating, 0) - getSafeNumber(a.rating, 0));
+      return list.sort((a, b) => b.rating - a.rating);
     }
     
     // DEFAULT sorting: Anime Figures first, then Alphabetically by name
@@ -92,7 +86,7 @@ export function ShopPage() {
       if (aIsFigure && !bIsFigure) return -1;
       if (!aIsFigure && bIsFigure) return 1;
       // alphabetical
-      return getSafeString(a.name).localeCompare(getSafeString(b.name));
+      return a.name.localeCompare(b.name);
     });
   }, [filteredProducts, sortBy]);
 
@@ -481,16 +475,17 @@ export function ShopPage() {
                       {/* Product display thumbnail image */}
                       <div className="relative aspect-4/3 overflow-hidden bg-slate-950 border-b border-white/5">
                         <img
-                          src={product.image}
-                          alt={getSafeString(product.name, 'Unnamed product')}
+                          src={getSafeString(product.image, '/logo.png')}
+                          alt={product.name}
                           referrerPolicy="no-referrer"
+                onError={(event) => { event.currentTarget.src = '/logo.png'; }}                          onError={(event) => { event.currentTarget.src = '/logo.png'; }}
                           className="w-full h-full object-cover filter brightness-90 group-hover:brightness-100 group-hover:scale-102 transition-all duration-500"
                         />
 
                         {/* Badging overlay */}
                         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 inline-flex font-mono">
                           <span className="bg-slate-950 border border-white/20 text-gray-300 text-[8px] px-2 py-0.5 rounded font-black uppercase tracking-wider">
-                            {getSafeString(product.category, 'product').replace('-', ' ')}
+                            {product.category.replace('-', ' ')}
                           </span>
                           {product.subCategory && (
                             <span className="bg-slate-950 border border-[#e60012]/40 text-[#e60012] font-semibold text-[8px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">
@@ -545,7 +540,7 @@ export function ShopPage() {
                           </div>
                           
                           <h3 className="text-xs font-bold text-white font-sans tracking-tight line-clamp-2 min-h-[32px] group-hover:text-[#e60012] transition-colors leading-relaxed">
-                            {getSafeString(product.name, 'Unnamed product')}
+                            {product.name}
                           </h3>
                         </div>
 
@@ -610,8 +605,8 @@ export function ShopPage() {
             {/* left column layout image */}
             <div className="w-full md:w-1/2 aspect-square rounded-lg bg-slate-950 border border-white/5 overflow-hidden flex-shrink-0 relative">
               <img
-                src={selectedQuickView.image}
-                alt={getSafeString(selectedQuickView.name, 'Unnamed product')}
+                src={getSafeString(selectedQuickView.image, '/logo.png')}
+                alt={selectedQuickView.name}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover filter brightness-95"
               />
@@ -645,7 +640,7 @@ export function ShopPage() {
                 </div>
 
                 <h2 className="text-md md:text-lg font-display font-medium text-white tracking-widest uppercase leading-snug">
-                  {getSafeString(selectedQuickView.name, 'Unnamed product')}
+                  {selectedQuickView.name}
                 </h2>
 
                 <div className="flex items-center gap-4 text-xs font-bold font-mono">
@@ -654,7 +649,7 @@ export function ShopPage() {
                 </div>
 
                 <p className="text-xs text-gray-300 leading-relaxed font-sans font-medium">
-                  {getSafeString(selectedQuickView.description, 'Japanese collectible product.')}
+                  {selectedQuickView.description}
                 </p>
 
                 <div className="pt-2">

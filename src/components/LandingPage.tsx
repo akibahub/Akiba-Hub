@@ -300,7 +300,7 @@ export function LandingPage() {
                     </div>
 
                     <div className="pt-3 border-t border-white/5 mt-3 flex items-center justify-between font-mono">
-                      <span className="text-sm font-bold text-white">${p.price.toFixed(2)}</span>
+                      <span className="text-sm font-bold text-white">£{Number(p.price ?? 0).toFixed(2)}</span>
                       <button
                         id={`hero-item-add-${p.id}`}
                         onClick={() => addToCart(p)}
