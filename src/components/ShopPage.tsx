@@ -495,7 +495,7 @@ export function ShopPage() {
                           src={getSafeString(product.image, '/logo.png')}
                           alt={product.name}
                           referrerPolicy="no-referrer"
-                onError={(event) => { event.currentTarget.src = '/logo.png'; }}                          onError={(event) => { event.currentTarget.src = '/logo.png'; }}
+                          onError={(event) => { event.currentTarget.src = '/logo.png'; }}
                           className="w-full h-full object-cover filter brightness-90 group-hover:brightness-100 group-hover:scale-102 transition-all duration-500"
                         />
 

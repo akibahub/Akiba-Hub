@@ -99,7 +99,7 @@ export function LandingPage() {
               <div className="absolute w-[270px] h-[350px] bg-[#121215] border border-white/40 rounded-xl rotate-[-6deg] translate-x-[-30px] shadow-[0_0_20px_rgba(230,0,18,0.2)] overflow-hidden group hover:rotate-0 hover:translate-x-0 transition-all duration-300">
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10" />
                 <img
-                  src="https://images.unsplash.com/photo-1627856013091-fed6e4e30025?w=500&auto=format&fit=crop&q=80"
+                  src="https://drive.google.com/thumbnail?id=1_qZ_4s_O-cHHWa7COo5EnITUfQCh5mOl&sz=w1000"
                   alt="Pokémon TCG"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover filter brightness-90 group-hover:brightness-100 transition-all animate-[pulse_6s_infinite] group-hover:scale-105"
@@ -113,7 +113,7 @@ export function LandingPage() {
               <div className="absolute w-[270px] h-[350px] bg-[#111113] border border-white rounded-xl rotate-[6deg] translate-x-[30px] translate-y-4 shadow-[0_0_20px_rgba(255,255,255,0.25)] overflow-hidden group hover:rotate-0 hover:translate-x-0 transition-all duration-300">
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10" />
                 <img
-                  src="https://images.unsplash.com/photo-1559897200-b0ebb809f72e?w=500&auto=format&fit=crop&q=80"
+                  src="https://otakura.com/cdn/shop/files/IchibanKujiOnePieceNewFourEmperorsLastOnePrizeMonkeyD.LuffyFigure_1066dfc2-e0f2-492e-8d0d-8d78899094e7.webp?v=1719065426&width=800"
                   alt="Anime figure Luffy"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover filter brightness-90 group-hover:brightness-100 transition-all animate-[pulse_8s_infinite] group-hover:scale-105"
@@ -151,7 +151,7 @@ export function LandingPage() {
               id: 'pokemon-english',
               title: 'Pokémon English',
               accent: 'border-white/10 hover:border-[#e60012] bg-[#121215] hover:shadow-[0_0_15px_rgba(230,0,18,0.2)]',
-              img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80',
+              img: 'https://drive.google.com/thumbnail?id=106mUjr4iB1i7I731NW2c7knHuPFS-r5S&sz=w1000',
               desc: 'English print Pokémon TCG with original silver foils.',
               badge: 'USA STANDARD',
               emoji: '⚡'
@@ -160,7 +160,7 @@ export function LandingPage() {
               id: 'pokemon-japanese',
               title: 'Pokémon Japanese',
               accent: 'border-white/10 hover:border-[#e60012] bg-[#121215] hover:shadow-[0_0_15px_rgba(230,0,18,0.2)]',
-              img: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80',
+              img: 'https://drive.google.com/thumbnail?id=106mUjr4iB1i7I731NW2c7knHuPFS-r5S&sz=w1000',
               desc: 'Pristine textured imports with iconic gold seals.',
               badge: 'TOKYO DIRECT',
               emoji: '⛩️'
@@ -169,7 +169,7 @@ export function LandingPage() {
               id: 'onepiece-english',
               title: 'One Piece English',
               accent: 'border-white/10 hover:border-[#e60012] bg-[#121215] hover:shadow-[0_0_15px_rgba(230,0,18,0.2)]',
-              img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80',
+              img: 'https://drive.google.com/thumbnail?id=1N0_JeOdVRh_uNAXo8mTaZj9HKnCgKeiQ&sz=w1000',
               desc: 'Manga themed game card packs in western print.',
               badge: 'USA STANDARD',
               emoji: '🏴‍☠️'
@@ -178,7 +178,7 @@ export function LandingPage() {
               id: 'onepiece-japanese',
               title: 'One Piece Japanese',
               accent: 'border-white/10 hover:border-[#e60012] bg-[#121215] hover:shadow-[0_0_15px_rgba(230,0,18,0.2)]',
-              img: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=600&auto=format&fit=crop&q=80',
+              img: 'https://drive.google.com/thumbnail?id=121YwUZxMMk5voCDYm2WmZU3HIjIhZTSA&sz=w1000',
               desc: 'Premium holo Japanese collectibles and box-toppers.',
               badge: 'TOKYO DIRECT',
               emoji: '⚔️'
@@ -187,7 +187,7 @@ export function LandingPage() {
               id: 'action-fig',
               title: 'Action Figures',
               accent: 'border-white/10 hover:border-[#e60012] bg-[#121215] hover:shadow-[0_0_15px_rgba(230,0,18,0.2)]',
-              img: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=600&auto=format&fit=crop&q=80',
+              img: 'https://drive.google.com/thumbnail?id=1XxXBlj_dwkjS0L6xucqys70UQaBTWQaa&sz=w1000',
               desc: 'Categorized by anime. Beautiful scale sculptures.',
               badge: 'PVC DIORAMA',
               emoji: '👾'
