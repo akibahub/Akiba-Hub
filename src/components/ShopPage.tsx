@@ -4,6 +4,19 @@ import { ANIME_CATEGORIES } from '../data';
 import { Product } from '../types';
 import { Search, SlidersHorizontal, ShoppingCart, Star, HelpCircle, Eye, Check, X, Sparkles, Filter, ShieldCheck, ChevronRight } from 'lucide-react';
 
+function getSafeString(value: unknown, fallback = ''): string {
+  return String(value ?? fallback);
+}
+
+function getSafeNumber(value: unknown, fallback = 0): number {
+  const parsedValue =
+    typeof value === 'string'
+      ? Number(value.replace(/[£,$\s]/g, ''))
+      : Number(value);
+
+  return Number.isFinite(parsedValue) ? parsedValue : fallback;
+}
+
 export function ShopPage() {
   const {
     addToCart,
@@ -27,7 +40,11 @@ export function ShopPage() {
 
   // Filter products dynamically
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+  const safeProducts = Array.isArray(products)
+    ? products.filter((product): product is Product => Boolean(product))
+    : [];
+
+  return safeProducts.filter((product) => {
       // 1. Matches active category
       const matchCategory =
         selectedCategory === 'all' || product.category === selectedCategory;
@@ -620,7 +637,9 @@ export function ShopPage() {
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2 font-mono">
                   <span className="text-[9px] bg-[#18181c] border border-[#e60012]/40 text-[#e60012] px-2.5 py-0.5 rounded uppercase font-bold">
-                    {selectedQuickView.category.replace('-', ' ').toUpperCase()}
+                    getSafeString(selectedQuickView.category, 'product')
+                      .replace('-', ' ')
+                      .toUpperCase()
                   </span>
                   {selectedQuickView.subCategory && (
                     <span className="text-[9px] bg-[#18181c] border border-white/30 text-white px-2.5 py-0.5 rounded uppercase font-bold">
