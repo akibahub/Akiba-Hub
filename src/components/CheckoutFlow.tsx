@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useShop } from '../context/ShopContext';
 import { ShippingDetails } from '../types';
-import { ChevronRight, CheckCircle, ShoppingBag, Lock, Info, ExternalLink, Code2 } from 'lucide-react';
+import { ChevronRight, CheckCircle, ShoppingBag, Lock, Info, ExternalLink, Code2, Radio } from 'lucide-react';
 
 export function CheckoutFlow() {
   const {
@@ -30,7 +30,7 @@ export function CheckoutFlow() {
     city: '',
     state: '',
     postalCode: '',
-    country: 'United States',
+    country: 'United Kingdom',
     shippingMethod: 'standard',
   });
 
@@ -372,7 +372,7 @@ export function CheckoutFlow() {
                           </svg>
                         </div>
                         <p className="text-[11px] text-gray-400 max-w-sm mx-auto font-sans font-medium">
-                          Click the smart payment cards below to authorize our integrated sandbox simulation. Works with mock developer test accounts safely.
+                          Settle your transaction securely with PayPal. Choose either your PayPal account, credit/debit card, or pay later options.
                         </p>
 
                         <div className="space-y-3 pt-4 max-w-sm mx-auto font-mono">
@@ -558,38 +558,55 @@ export function CheckoutFlow() {
                 </div>
               </div>
 
-              {/* Developer Integration Sandbox Helper Widget Panel */}
-              <div className="bg-[#121215] border border-white/5 rounded-xl p-6 shadow-xl leading-normal text-left">
-                <div className="flex items-center gap-2 mb-3 text-white font-mono">
-                  <Code2 className="w-4 h-4 text-white" />
-                  <span className="text-xs font-bold uppercase tracking-wider">DEVELOPER INTEGRATION</span>
-                </div>
-                <p className="text-[10.5px] text-gray-300 font-semibold mb-3 leading-relaxed">
-                  This checkout uses real PayPal buttons connected to your Vercel serverless endpoints. Test with PayPal Sandbox first, then switch your environment variables to live mode.
-                </p>
-
-                <div className="bg-[#18181c] p-3 rounded border border-white/5 font-mono text-[9px] text-gray-400 space-y-3">
-                  <div>
-                    <span className="text-[#e60012] font-bold">1. Embed React Paypal library</span>
-                    <pre className="bg-slate-950 p-2 border border-white/5 rounded text-gray-300 mt-1 select-all overflow-x-auto text-[8.5px]">npm install @paypal/react-paypal-js</pre>
+              {/* Whatnot Live Streams & Auctions Promotion */}
+              <div className="bg-[#121215] border border-white/5 rounded-xl overflow-hidden shadow-xl leading-normal text-left group">
+                <div className="relative h-40 bg-slate-950 overflow-hidden border-b border-white/5">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/20 to-transparent z-10" />
+                  <img
+                    src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80"
+                    alt="Akiba Hub Live Stream on Whatnot"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover filter brightness-75 group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 left-3 bg-[#e60012] text-white text-[8px] font-mono font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-[0_0_10px_rgba(230,0,18,0.5)] z-20 animate-pulse">
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+                    LIVE AUCTIONS
                   </div>
-                  <div>
-                    <span className="text-white font-bold">2. Add the PayPal Provider</span>
-                    <div className="bg-slate-950 p-1.5 border border-white/5 rounded text-gray-400 font-bold select-all mt-1 truncate">
-                      {"<PayPalScriptProvider options={{ clientId: 'CLIENT_ID' }}>"}
+                </div>
+                
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-2 text-white font-mono">
+                    <Radio className="w-4 h-4 text-[#e60012]" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#e60012]">CATCH US LIVE ON WHATNOT!</span>
+                  </div>
+                  <h4 className="text-sm font-sans font-black text-white leading-snug">
+                    Akiba Hub Official Whatnot Channel
+                  </h4>
+                  <p className="text-[10.5px] text-gray-400 mt-2 leading-relaxed">
+                    Join our live claim shows, mystery packs, live breaks, and active anime figure auctions! Download the Whatnot app to get search updates and notification reminders when we go live.
+                  </p>
+
+                  <div className="mt-4 p-3 bg-[#18181c] border border-white/5 rounded flex items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <span className="text-[9px] font-mono text-[#e60012] font-semibold block uppercase">Exclusive Perk</span>
+                      <span className="text-[10px] text-white font-bold block leading-tight">Get £10 Free Credit on Signup Code!</span>
+                    </div>
+                    <div className="flex-shrink-0 bg-white/10 p-1.5 rounded border border-white/10 font-mono text-[9px] text-white font-bold tracking-widest px-2.5">
+                      AKIBA_HUB
                     </div>
                   </div>
-                  <div>
-                    <span className="text-[#e60012] font-bold">3. Implement capture payload callback</span>
-                    <p className="text-[8px] text-gray-500 mt-1 leading-snug">Attach payment response handlers to standard state dispatchers inside your Shop Context container module.</p>
-                  </div>
-                </div>
 
-                <div className="mt-4 flex items-center justify-between text-[10px] font-mono font-bold text-white hover:text-[#e60012] transition-all">
-                  <a href="https://developer.paypal.com/sdk/js/configuration/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Official PayPal SDK Manual
-                  </a>
+                  <div className="mt-5">
+                    <a
+                      href="https://www.whatnot.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#e60012] text-white font-mono font-bold text-xs rounded hover:bg-[#ff1e27] transition-all shadow-[0_0_12px_rgba(230,0,18,0.3)] hover:shadow-[0_0_15px_rgba(230,0,18,0.5)] cursor-pointer text-center"
+                    >
+                      FOLLOW OUR WHATNOT STREAM
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
                 </div>
               </div>
 

@@ -134,7 +134,7 @@ export function Footer({ className = '' }: { className?: string }) {
             <li>
               <span className="text-white flex items-center gap-1 font-semibold border-t border-white/5 pt-2 mt-2">
                 <HelpCircle className="w-3.5 h-3.5" />
-                PayPal Sandbox Secured
+                Secured Payments with paypal
               </span>
             </li>
           </ul>

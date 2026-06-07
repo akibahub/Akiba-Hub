@@ -139,7 +139,7 @@ export function CartDrawer() {
                        {/* price and delete layout */}
                        <div className="flex items-center gap-2 text-xs">
                          <span className="font-extrabold text-white">
-                           ${(item.product.price * item.quantity).toFixed(2)}
+                           £{(item.product.price * item.quantity).toFixed(2)}
                          </span>
                          <button
                            id={`del-cart-item-${item.product.id}`}
@@ -168,7 +168,7 @@ export function CartDrawer() {
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-gray-400">ESTIMATED TOTAL</span>
                   <span className="text-xl font-bold text-neoncyan filter drop-shadow-[0_0_5px_rgba(0,240,255,0.4)] animate-pulse">
-                    ${subtotal.toFixed(2)}
+                    £{subtotal.toFixed(2)}
                   </span>
                 </div>
                 <p className="text-[9px] text-gray-500 font-semibold leading-normal font-sans">

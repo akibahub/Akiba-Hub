@@ -154,9 +154,9 @@ export function OrderSuccess() {
                        </span>
                     </td>
                     <td className="py-3 text-center font-mono text-white font-bold">{item.quantity}</td>
-                    <td className="py-3 text-right font-mono text-white font-bold">${item.product.price.toFixed(2)}</td>
+                    <td className="py-3 text-right font-mono text-white font-bold">£{item.product.price.toFixed(2)}</td>
                     <td className="py-3 text-right font-mono font-bold text-white">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      £{(item.product.price * item.quantity).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -169,19 +169,19 @@ export function OrderSuccess() {
             <div className="w-full sm:max-w-xs space-y-2 text-xs text-gray-400 font-semibold">
               <div className="flex justify-between">
                 <span>Items Subtotal</span>
-                <span className="text-white font-bold">${currentOrder.subtotal.toFixed(2)}</span>
+                <span className="text-white font-bold">£{currentOrder.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping Method</span>
-                <span className="text-white font-bold">${currentOrder.shippingCost.toFixed(2)}</span>
+                <span className="text-white font-bold">£{currentOrder.shippingCost.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Estimated Tax (8%)</span>
-                <span className="text-white font-bold">${currentOrder.tax.toFixed(2)}</span>
+                <span className="text-white font-bold">£{currentOrder.tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between border-t border-white/10 pt-2 text-xs font-bold text-white font-sans">
                 <span>TOTAL AMOUNT PAID:</span>
-                <span className="font-mono text-sm font-extrabold text-[#e60012]">${currentOrder.total.toFixed(2)}</span>
+                <span className="font-mono text-sm font-extrabold text-[#e60012]">£{currentOrder.total.toFixed(2)}</span>
               </div>
             </div>
           </div>
