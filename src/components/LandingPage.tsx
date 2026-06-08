@@ -7,19 +7,55 @@ export function LandingPage() {
 
   // Contact us form states
   const [contactForm, setContactForm] = useState({
-    name: '',
-    email: '',
-    message: '',
+    name: "",
+    email: "",
+    message: "",
+    website: "",
   });
-  const [contactSuccess, setContactSuccess] = useState(false);
 
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setContactSuccess(true);
-    setTimeout(() => {
-      setContactForm({ name: '', email: '', message: '' });
-      setContactSuccess(false);
-    }, 4000);
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactSuccess, setContactSuccess] = useState(false);
+  const [contactError, setContactError] = useState("");
+
+  const handleContactSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (contactSubmitting) return;
+
+    setContactSubmitting(true);
+    setContactSuccess(false);
+    setContactError("");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(contactForm),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send your message.");
+      }
+
+      setContactSuccess(true);
+
+      setContactForm({
+        name: "",
+        email: "",
+        message: "",
+        website: "",
+      });
+    } catch (error) {
+      setContactError(
+        error instanceof Error ? error.message : "Your message could not be submitted."
+      );
+    } finally {
+      setContactSubmitting(false);
+    }
   };
 
   // Pre-filter featured products
@@ -385,6 +421,22 @@ export function LandingPage() {
           
           <form onSubmit={handleContactSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
             
+            <input
+              type="text"
+              name="website"
+              value={contactForm.website}
+              onChange={(event) =>
+                setContactForm((current) => ({
+                  ...current,
+                  website: event.target.value,
+                }))
+              }
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute -left-[9999px]"
+            />
+
             <div className="space-y-4 font-mono text-xs">
               <div>
                 <label className="block text-[10px] text-gray-400 uppercase mb-1 tracking-widest font-bold">Your Name</label>
@@ -393,7 +445,12 @@ export function LandingPage() {
                   required
                   placeholder="e.g. Ash Ketchum"
                   value={contactForm.name}
-                  onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                  onChange={(event) =>
+                    setContactForm((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
                   className="w-full bg-[#18181c] border border-white/10 hover:border-white/20 focus:border-[#e60012] rounded px-4 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#e60012] font-semibold transition-all"
                 />
               </div>
@@ -404,7 +461,12 @@ export function LandingPage() {
                   required
                   placeholder="ash@pallet.com"
                   value={contactForm.email}
-                  onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                  onChange={(event) =>
+                    setContactForm((current) => ({
+                      ...current,
+                      email: event.target.value,
+                    }))
+                  }
                   className="w-full bg-[#18181c] border border-white/10 hover:border-white/20 focus:border-[#e60012] rounded px-4 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#e60012] font-semibold transition-all"
                 />
               </div>
@@ -417,7 +479,14 @@ export function LandingPage() {
                 rows={4}
                 placeholder="How can we help? Tell us about booster boxes, figures, custom requests..."
                 value={contactForm.message}
-                onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                minLength={10}
+                maxLength={3000}
+                onChange={(event) =>
+                  setContactForm((current) => ({
+                    ...current,
+                    message: event.target.value,
+                  }))
+                }
                 className="w-full bg-[#18181c] border border-white/10 hover:border-white/20 focus:border-[#e60012] rounded px-4 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#e60012] font-semibold transition-all"
               />
             </div>
@@ -429,11 +498,11 @@ export function LandingPage() {
               
               <button
                 type="submit"
-                className="w-full sm:w-auto px-6 py-3 bg-[#e60012] hover:bg-[#e60012]/90 border border-[#e60012] text-white font-mono font-bold text-xs tracking-wider rounded shadow-[0_0_15px_rgba(230,0,18,0.3)] hover:shadow-[0_0_20px_rgba(230,0,18,0.6)] cursor-pointer transition-all flex items-center justify-center gap-1.5"
-                disabled={contactSuccess}
+                className="w-full sm:w-auto px-6 py-3 bg-[#e60012] hover:bg-[#e60012]/90 border border-[#e60012] text-white font-mono font-bold text-xs tracking-wider rounded shadow-[0_0_15px_rgba(230,0,18,0.3)] hover:shadow-[0_0_20px_rgba(230,0,18,0.6)] cursor-pointer transition-all flex items-center justify-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={contactSubmitting}
               >
                 <Send className="w-3.5 h-3.5" />
-                SEND MESSAGE
+                {contactSubmitting ? "SENDING..." : "SEND MESSAGE"}
               </button>
             </div>
 
@@ -441,7 +510,13 @@ export function LandingPage() {
 
           {contactSuccess && (
             <div className="mt-6 p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg text-xs text-center font-bold font-mono flex items-center justify-center gap-2 animate-bounce shadow-[0_0_10px_rgba(16,185,129,0.1)]">
-              <Check className="w-4 h-4" /> MESSAGE SENT! Our support team has received your message and will get back to you shortly.
+              <Check className="w-4 h-4" /> Message received. Our team will contact you shortly.
+            </div>
+          )}
+
+          {contactError && (
+            <div className="mt-6 p-4 bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-lg text-xs text-center font-bold font-mono">
+              {contactError}
             </div>
           )}
         </div>

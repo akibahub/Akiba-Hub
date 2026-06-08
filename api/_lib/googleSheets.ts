@@ -168,3 +168,48 @@ export async function appendOrderItemsToSheet(
     },
   });
 }
+
+function getMessagesSpreadsheetId(): string {
+  const spreadsheetId = process.env.GOOGLE_MESSAGES_SHEET_ID;
+
+  if (!spreadsheetId) {
+    throw new Error("Missing GOOGLE_MESSAGES_SHEET_ID");
+  }
+
+  return spreadsheetId;
+}
+
+export type StoredContactMessage = {
+  messageId: string;
+  name: string;
+  email: string;
+  message: string;
+  status: string;
+  createdAt: string;
+};
+
+export async function appendContactMessage(
+  contact: StoredContactMessage
+): Promise<void> {
+  const spreadsheetId = getMessagesSpreadsheetId();
+  const sheets = getSheetsClient();
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: "ContactMessages!A:F",
+    valueInputOption: "RAW",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: {
+      values: [
+        [
+          contact.messageId,
+          contact.name,
+          contact.email,
+          contact.message,
+          contact.status,
+          contact.createdAt,
+        ],
+      ],
+    },
+  });
+}
