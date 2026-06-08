@@ -9,6 +9,7 @@ import {
   appendOrderItemsToSheet,
   orderAlreadySaved,
 } from "../_lib/googleSheets.js";
+import { sendOrderEmails } from "../_lib/email.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
@@ -105,12 +106,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }))
     );
 
+    // Attempt customer receipt and optional merchant notification email without breaking successfully paid orders
+    try {
+      await sendOrderEmails({
+        orderId: akibaOrderId,
+        paypalOrderId: String(capture.id ?? orderId),
+        captureId,
+        customerName: String(customer?.name ?? "").trim(),
+        customerEmail: String(customer?.email ?? "").trim(),
+        phone: String(customer?.phone ?? "").trim(),
+        address1: String(customer?.address1 ?? "").trim(),
+        address2: String(customer?.address2 ?? "").trim(),
+        city: String(customer?.city ?? "").trim(),
+        postcode: String(customer?.postcode ?? "").trim(),
+        country: String(customer?.country ?? "United Kingdom").trim(),
+        items: calculatedOrder.items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          lineTotal: item.lineTotal,
+        })),
+        subtotal: calculatedOrder.subtotal,
+        shipping: calculatedOrder.shipping,
+        total: calculatedOrder.total,
+        createdAt,
+      });
+    } catch (emailError) {
+      console.error("Order email failed:", emailError);
+    }
+
     return res.status(200).json({
       status: capture.status,
       paypalOrderId: capture.id,
       captureId,
       akibaOrderId,
       calculatedOrder,
+      emailAttempted: true,
     });
   } catch (error) {
     console.error("Capture and save order error:", error);
