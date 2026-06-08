@@ -1,6 +1,7 @@
 import React from 'react';
 import { Logo } from './Logo';
 import { useShop } from '../context/ShopContext';
+import { openCookiePreferences } from '../utils/cookieConsent';
 import { MapPin, Mail, Phone, Flame, Trophy, Shield, HelpCircle } from 'lucide-react';
 
 export function Footer({ className = '' }: { className?: string }) {
@@ -168,7 +169,31 @@ export function Footer({ className = '' }: { className?: string }) {
       {/* Bottom Legal copy block */}
       <div className="bg-[#050505] border-t border-white/5 py-6 text-center text-xs text-gray-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px]">
-          <p>© {new Date().getFullYear()} Akiba Hub Collectibles. London Tokyo Specialty Imports.</p>
+          <div className="space-y-2 text-center sm:text-left">
+            <p>© {new Date().getFullYear()} Akiba Hub Collectibles. London Tokyo Specialty Imports.</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 justify-center sm:justify-start text-gray-400 font-bold mt-1">
+              <button 
+                onClick={() => { setView('privacy'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
+                PRIVACY POLICY
+              </button>
+              <span className="text-gray-700">|</span>
+              <button 
+                onClick={() => { setView('cookie-policy'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
+                COOKIE POLICY
+              </button>
+              <span className="text-gray-700">|</span>
+              <button 
+                onClick={openCookiePreferences}
+                className="hover:text-[#e60012] transition-colors cursor-pointer"
+              >
+                COOKIE SETTINGS
+              </button>
+            </div>
+          </div>
           <p className="max-w-md text-center sm:text-right leading-relaxed text-gray-600">
             All Pokémon, Pikachu, and One Piece artwork and trademarks remain property of Nintendo, Game Freak, Bandai Namco, Shueisha, or Toei Animation. No corporate affiliation implied.
           </p>

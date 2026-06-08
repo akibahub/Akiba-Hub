@@ -7,7 +7,7 @@ interface ShopContextType {
   productsError: string | null;
   cart: CartItem[];
   isCartOpen: boolean;
-  activeView: 'landing' | 'shop' | 'checkout' | 'order-success';
+  activeView: 'landing' | 'shop' | 'checkout' | 'order-success' | 'privacy' | 'cookie-policy';
   selectedCategory: string; // 'all' | 'anime-figures' | 'trading-cards' | 'comic-books' | 'manga' | 'accessories'
   selectedAnime: string; // 'All Anime' or specific series name
   selectedSubCategory: string | null; // e.g., 'pokemon', 'onepiece', 'banpresto', etc.
@@ -17,7 +17,7 @@ interface ShopContextType {
   setComingSoonCategory: (cat: string | null) => void;
   currentOrder: Order | null;
   setCartOpen: (open: boolean) => void;
-  setView: (view: 'landing' | 'shop' | 'checkout' | 'order-success') => void;
+  setView: (view: 'landing' | 'shop' | 'checkout' | 'order-success' | 'privacy' | 'cookie-policy') => void;
   setCategoryAndGroup: (category: string, anime?: string) => void;
   setAdvancedFilters: (filters: {
     category?: string;
@@ -74,7 +74,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     return saved ? JSON.parse(saved) : [];
   });
   const [isCartOpen, setCartOpen] = useState(false);
-  const [activeView, setView] = useState<'landing' | 'shop' | 'checkout' | 'order-success'>( 'landing');
+  const [activeView, setView] = useState<'landing' | 'shop' | 'checkout' | 'order-success' | 'privacy' | 'cookie-policy'>('landing');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedAnime, setSelectedAnime] = useState<string>('All Anime');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);

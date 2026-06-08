@@ -6,6 +6,8 @@ import { LandingPage } from './components/LandingPage';
 import { ShopPage } from './components/ShopPage';
 import { CheckoutFlow } from './components/CheckoutFlow';
 import { OrderSuccess } from './components/OrderSuccess';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { CookiePolicy } from './components/CookiePolicy';
 import { CartDrawer } from './components/CartDrawer';
 import { Sparkles, BookOpen, AlertTriangle, X } from 'lucide-react';
 
@@ -24,6 +26,8 @@ function AppContent() {
           {activeView === 'shop' && <ShopPage />}
           {activeView === 'checkout' && <CheckoutFlow />}
           {activeView === 'order-success' && <OrderSuccess />}
+          {activeView === 'privacy' && <PrivacyPolicy />}
+          {activeView === 'cookie-policy' && <CookiePolicy />}
         </div>
       </div>
 
