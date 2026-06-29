@@ -41,6 +41,7 @@ export function CheckoutFlow() {
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof ShippingDetails, string>>>({});
   
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
 
   // Compute live subtotal details
   const subtotal = getCartSubtotal();
@@ -353,7 +354,7 @@ export function CheckoutFlow() {
                   </div>
                 )}
 
-                {/* Step 3: Payment & Simulated PayPal Smart Button Integration */}
+                {/* Step 3: Payment & PayPal Smart Button Integration */}
                 {currentStep === 3 && (
                   <div className="space-y-6">
                     <div className="bg-[#18181c] p-4 border border-white/5 rounded font-mono text-[10px]">
@@ -379,128 +380,157 @@ export function CheckoutFlow() {
                           </svg>
                         </div>
                         <p className="text-[11px] text-gray-400 max-w-sm mx-auto font-sans font-medium">
-                          Settle your transaction securely with PayPal. Choose either your PayPal account, credit/debit card, or pay later options.
+                          Pay securely with PayPal or card. Choose either your PayPal account, credit/debit card, or pay later options.
                         </p>
 
-                        <div className="space-y-3 pt-4 max-w-sm mx-auto font-mono">
+                        <div className="space-y-3 pt-4 max-w-sm mx-auto font-mono text-left">
                           {paymentError && (
                             <div className="bg-[#e60012]/10 border border-[#e60012]/40 text-[#ff6b73] rounded p-3 text-[10px] font-bold text-left">
                               {paymentError}
                             </div>
                           )}
 
-                          <PayPalScriptProvider
-                            options={{
-                              clientId: (import.meta as any).env.VITE_PAYPAL_CLIENT_ID || '',
-                              currency: 'GBP',
-                              intent: 'capture',
-                            }}
-                          >
-                            <PayPalButtons
-                              style={{
-                                layout: 'vertical',
-                                color: 'gold',
-                                shape: 'rect',
-                                label: 'paypal',
+                          {isPaymentProcessing ? (
+                            <div className="rounded-xl border border-[#e60012]/40 bg-[#121215] p-8 text-center shadow-[0_0_20px_rgba(230,0,18,0.25)] font-sans">
+                              <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-[#e60012]/30 border-t-[#e60012]" />
+
+                              <h3 className="text-xl font-bold tracking-widest text-white font-mono">
+                                PROCESSING PAYMENT
+                              </h3>
+
+                              <p className="mt-3 text-xs text-gray-400">
+                                Please do not refresh, go back, or close this page. We are confirming your payment and saving your order.
+                              </p>
+                            </div>
+                          ) : (
+                            <PayPalScriptProvider
+                              options={{
+                                clientId: (import.meta as any).env.VITE_PAYPAL_CLIENT_ID || '',
+                                currency: 'GBP',
+                                intent: 'capture',
                               }}
-                              createOrder={async () => {
-                                setPaymentError(null);
+                            >
+                              <PayPalButtons
+                                style={{
+                                  layout: 'vertical',
+                                  color: 'gold',
+                                  shape: 'rect',
+                                  label: 'paypal',
+                                }}
+                                createOrder={async () => {
+                                  setPaymentError(null);
 
-                                const safeCart = cart.map((item) => ({
-                                  id: item.product.id,
-                                  quantity: item.quantity,
-                                }));
+                                  const safeCart = cart.map((item) => ({
+                                    id: item.product.id,
+                                    quantity: item.quantity,
+                                  }));
 
-                                const response = await fetch('/api/paypal/create-order', {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                  },
-                                  body: JSON.stringify({ cart: safeCart }),
-                                });
-
-                                const data = await response.json();
-
-                                if (!response.ok) {
-                                  const message = data.error || 'Failed to create PayPal order';
-                                  setPaymentError(message);
-                                  throw new Error(message);
-                                }
-
-                                return data.id;
-                              }}
-                              onApprove={async (data) => {
-                                setPaymentError(null);
-
-                                if (!data.orderID) {
-                                  const message = 'Missing PayPal order ID';
-                                  setPaymentError(message);
-                                  throw new Error(message);
-                                }
-
-                                const safeCart = cart.map((item) => ({
-                                  id: item.product.id,
-                                  quantity: item.quantity,
-                                }));
-
-                                const response = await fetch('/api/paypal/capture-order', {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                  },
-                                  body: JSON.stringify({
-                                    orderId: data.orderID,
-                                    cart: safeCart,
-                                    customer: {
-                                      name: formData.fullName,
-                                      email: formData.email,
-                                      phone: formData.phone,
-                                      address1: formData.addressLine1,
-                                      address2: formData.addressLine2 || '',
-                                      city: formData.city,
-                                      postcode: formData.postalCode,
-                                      country: formData.country,
+                                  const response = await fetch('/api/paypal/create-order', {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
                                     },
-                                  }),
-                                });
+                                    body: JSON.stringify({ cart: safeCart }),
+                                  });
 
-                                const result = await response.json();
+                                  const data = await response.json();
 
-                                if (!response.ok) {
-                                  const message = result.error || 'Failed to capture payment';
-                                  setPaymentError(message);
-                                  throw new Error(message);
-                                }
+                                  if (!response.ok) {
+                                    const message = data.error || 'Failed to create PayPal order';
+                                    setPaymentError(message);
+                                    throw new Error(message);
+                                  }
 
-                                placeOrder({
-                                  id: result.akibaOrderId,
-                                  items: [...cart],
-                                  shippingDetails: { ...formData },
-                                  subtotal: Number(result.calculatedOrder.subtotal),
-                                  shippingCost: Number(result.calculatedOrder.shipping),
-                                  tax: 0,
-                                  total: Number(result.calculatedOrder.total),
-                                  paymentId: result.captureId,
-                                  date: new Date().toLocaleDateString(undefined, {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                  }),
-                                  status: 'processing',
-                                });
-                              }}
-                              onError={(err) => {
-                                console.error('PayPal error:', err);
-                                setPaymentError('PayPal checkout failed. Please try again.');
-                              }}
-                            />
-                          </PayPalScriptProvider>
+                                  return data.id;
+                                }}
+                                onApprove={async (data) => {
+                                  setPaymentError(null);
+                                  setIsPaymentProcessing(true);
+
+                                  try {
+                                    if (!data.orderID) {
+                                      throw new Error('Missing PayPal order ID');
+                                    }
+
+                                    const safeCart = cart.map((item) => ({
+                                      id: item.product.id,
+                                      quantity: item.quantity,
+                                    }));
+
+                                    const response = await fetch('/api/paypal/capture-order', {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                      },
+                                      body: JSON.stringify({
+                                        orderId: data.orderID,
+                                        cart: safeCart,
+                                        customer: {
+                                          name: formData.fullName,
+                                          email: formData.email,
+                                          phone: formData.phone,
+                                          address1: formData.addressLine1,
+                                          address2: formData.addressLine2 || '',
+                                          city: formData.city,
+                                          postcode: formData.postalCode,
+                                          country: formData.country,
+                                        },
+                                      }),
+                                    });
+
+                                    const result = await response.json();
+
+                                    if (!response.ok) {
+                                      const message = result.error || 'Failed to capture payment';
+                                      throw new Error(message);
+                                    }
+
+                                    placeOrder({
+                                      id: result.akibaOrderId,
+                                      items: [...cart],
+                                      shippingDetails: { ...formData },
+                                      subtotal: Number(result.calculatedOrder.subtotal),
+                                      shippingCost: Number(result.calculatedOrder.shipping),
+                                      tax: 0,
+                                      total: Number(result.calculatedOrder.total),
+                                      paymentId: result.captureId,
+                                      date: new Date().toLocaleDateString(undefined, {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                      }),
+                                      status: 'processing',
+                                    });
+                                  } catch (error) {
+                                    const message =
+                                      error instanceof Error
+                                        ? error.message
+                                        : 'Payment processing failed. Please try again.';
+
+                                    setPaymentError(message);
+                                    setIsPaymentProcessing(false);
+                                  }
+                                }}
+                                onCancel={() => {
+                                  setIsPaymentProcessing(false);
+                                  setPaymentError('Payment was cancelled. You can try again when ready.');
+                                }}
+                                onError={(err) => {
+                                  console.error('PayPal error:', err);
+                                  setIsPaymentProcessing(false);
+                                  setPaymentError('PayPal checkout failed. Please try again.');
+                                }}
+                              />
+                            </PayPalScriptProvider>
+                          )}
                         </div>
 
-                        <div className="pt-2 text-[9px] text-gray-400 font-mono flex items-center justify-center gap-1.5 font-bold">
-                          <CheckCircle className="w-4 h-4 text-[#e60012]" />
-                          PayPal Secure Transactions Protected
-                        </div>
+                        {!isPaymentProcessing && (
+                          <div className="pt-2 text-[9px] text-gray-400 font-mono flex items-center justify-center gap-1.5 font-bold">
+                            <CheckCircle className="w-4 h-4 text-[#e60012]" />
+                            PayPal Secure Transactions Protected
+                          </div>
+                        )}
                       </div>
 
                     </div>
@@ -520,7 +550,7 @@ export function CheckoutFlow() {
               </div>
             </div>
 
-            {/* Right Invoice & Developer Integration Sidebar */}
+            {/* Right Invoice Sidebar */}
             <div className="lg:col-span-5 space-y-6">
               
               {/* Receipt Cart breakdown invoice */}
