@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useShop } from '../context/ShopContext';
 import { ShippingDetails } from '../types';
@@ -12,13 +12,17 @@ export function CheckoutFlow() {
     placeOrder
   } = useShop();
 
-  // Redirect to directory if cart is empty and not on receipt
-  if (cart.length === 0) {
-    // If we have a successful transaction, we want to stay
-  }
+  const checkoutTopRef = useRef<HTMLDivElement | null>(null);
 
   // Funnel steps state
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+
+  useEffect(() => {
+    checkoutTopRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, [currentStep]);
 
   // Form states for unregistered user
   const [formData, setFormData] = useState<ShippingDetails>({
@@ -81,7 +85,7 @@ export function CheckoutFlow() {
   };
 
   return (
-    <div className="pt-28 pb-16 min-h-screen bg-[#070707] text-white">
+    <div ref={checkoutTopRef} className="pt-28 pb-16 min-h-screen bg-[#070707] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Navigation Indicator Header */}
@@ -192,6 +196,7 @@ export function CheckoutFlow() {
                       </span>
                       <button
                         id="step1-next-btn"
+                        type="button"
                         onClick={handleNextStep}
                         className="px-5 py-3 bg-[#e60012] text-white font-bold text-xs rounded shadow-[0_0_12px_rgba(230,0,18,0.35)] cursor-pointer flex items-center gap-1.5 hover:bg-[#ff1e27] transition-all"
                       >
@@ -329,6 +334,7 @@ export function CheckoutFlow() {
 
                     <div className="pt-6 border-t border-white/5 flex justify-between items-center font-mono">
                       <button
+                        type="button"
                         onClick={() => setCurrentStep(1)}
                         className="text-xs font-bold text-gray-500 hover:text-white transition-all cursor-pointer"
                       >
@@ -336,6 +342,7 @@ export function CheckoutFlow() {
                       </button>
                       <button
                         id="step2-next-btn"
+                        type="button"
                         onClick={handleNextStep}
                         className="px-5 py-3 bg-[#e60012] text-white font-bold text-xs rounded shadow-[0_0_12px_rgba(230,0,18,0.35)] cursor-pointer flex items-center gap-1.5 hover:bg-[#ff1e27] transition-all"
                       >
@@ -500,6 +507,7 @@ export function CheckoutFlow() {
 
                     <div className="pt-4 border-t border-white/5 flex justify-between items-center font-mono">
                       <button
+                        type="button"
                         onClick={() => setCurrentStep(2)}
                         className="text-xs font-bold text-gray-500 hover:text-white transition-all cursor-pointer"
                       >

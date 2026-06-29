@@ -37,7 +37,7 @@ export function Footer({ className = '' }: { className?: string }) {
               <Shield className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-white text-xs font-bold font-mono tracking-wider uppercase">100% AUTHENTIC GUARANTEED</h4>
+              <h4 className="text-white text-xs font-bold font-mono tracking-wider uppercase">100% AUTHENTICITY GUARANTEED</h4>
               <p className="text-[11px] text-gray-400 mt-0.5 font-medium leading-relaxed">Every pack, booster box, and action figure is imported from official Tokyo publishers directly.</p>
             </div>
           </div>

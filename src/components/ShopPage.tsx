@@ -38,6 +38,53 @@ export function ShopPage() {
   const [selectedQuickView, setSelectedQuickView] = useState<Product | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!selectedQuickView) return;
+
+    const scrollY = window.scrollY;
+
+    const originalPosition = document.body.style.position;
+    const originalTop = document.body.style.top;
+    const originalLeft = document.body.style.left;
+    const originalRight = document.body.style.right;
+    const originalWidth = document.body.style.width;
+    const originalOverflow = document.body.style.overflow;
+
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.position = originalPosition;
+      document.body.style.top = originalTop;
+      document.body.style.left = originalLeft;
+      document.body.style.right = originalRight;
+      document.body.style.width = originalWidth;
+      document.body.style.overflow = originalOverflow;
+
+      window.scrollTo(0, scrollY);
+    };
+  }, [selectedQuickView]);
+
+  useEffect(() => {
+    if (!selectedQuickView) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedQuickView(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedQuickView]);
+
   // Filter products dynamically
   const filteredProducts = useMemo(() => {
   const safeProducts = Array.isArray(products)
@@ -502,7 +549,7 @@ export function ShopPage() {
                         {/* Badging overlay */}
                         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 inline-flex font-mono">
                           <span className="bg-slate-950 border border-white/20 text-gray-300 text-[8px] px-2 py-0.5 rounded font-black uppercase tracking-wider">
-                            {product.category.replace('-', ' ')}
+                            {getSafeString(product.category, 'product').replace('-', ' ')}
                           </span>
                           {product.subCategory && (
                             <span className="bg-slate-950 border border-[#e60012]/40 text-[#e60012] font-semibold text-[8px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">
@@ -605,16 +652,27 @@ export function ShopPage() {
 
       {/* Quick view modal */}
       {selectedQuickView && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#000]/90 backdrop-blur-md" onClick={() => setSelectedQuickView(null)} />
+        <div
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm overflow-y-auto overscroll-contain px-4 py-8 flex items-start justify-center"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Backdrop close button */}
+          <button
+            type="button"
+            onClick={() => setSelectedQuickView(null)}
+            className="fixed inset-0 w-full h-full cursor-default"
+            aria-label="Close quick view"
+          />
           
-          <div className="relative w-full max-w-2xl bg-[#121215] border border-white/10 rounded-xl overflow-hidden p-6 shadow-[0_0_35px_rgba(0,0,0,0.8)] z-10 flex flex-col md:flex-row gap-6 text-white text-left">
+          <div className="relative w-full max-w-2xl bg-[#121215] border border-white/10 rounded-xl overflow-hidden p-6 shadow-[0_0_35px_rgba(0,0,0,0.8)] z-10 flex flex-col md:flex-row gap-6 text-white text-left my-8 md:my-16">
             
             {/* Close button */}
             <button
               id="close-quickview"
+              type="button"
               onClick={() => setSelectedQuickView(null)}
-              className="absolute top-4 right-4 p-1 rounded bg-[#18181c] hover:bg-[#e60012] hover:text-white text-white border border-white/10 transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1 rounded bg-[#18181c] hover:bg-[#e60012] hover:text-white text-white border border-white/10 transition-all cursor-pointer z-20"
             >
               <X className="w-4 h-4" />
             </button>
@@ -637,9 +695,9 @@ export function ShopPage() {
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2 font-mono">
                   <span className="text-[9px] bg-[#18181c] border border-[#e60012]/40 text-[#e60012] px-2.5 py-0.5 rounded uppercase font-bold">
-                    getSafeString(selectedQuickView.category, 'product')
+                    {getSafeString(selectedQuickView.category, 'product')
                       .replace('-', ' ')
-                      .toUpperCase()
+                      .toUpperCase()}
                   </span>
                   {selectedQuickView.subCategory && (
                     <span className="text-[9px] bg-[#18181c] border border-white/30 text-white px-2.5 py-0.5 rounded uppercase font-bold">
@@ -690,6 +748,7 @@ export function ShopPage() {
               <div className="pt-6 border-t border-white/5 flex items-center gap-3 font-mono">
                 <button
                   id={`quick-add-${selectedQuickView.id}`}
+                  type="button"
                   onClick={() => {
                     handleAddToCart(selectedQuickView);
                     setSelectedQuickView(null);

@@ -132,7 +132,10 @@ export function LandingPage() {
             {/* Hero Right Column Visual cards image placeholder with tech frame */}
             <div className="lg:col-span-5 relative w-full h-[340px] sm:h-[420px] flex items-center justify-center">
               
-              <div className="absolute w-[270px] h-[350px] bg-[#121215] border border-white/40 rounded-xl rotate-[-6deg] translate-x-[-30px] shadow-[0_0_20px_rgba(230,0,18,0.2)] overflow-hidden group hover:rotate-0 hover:translate-x-0 transition-all duration-300">
+              <div 
+                onClick={() => setView('shop')}
+                className="absolute w-[270px] h-[350px] bg-[#121215] border border-white/40 rounded-xl rotate-[-6deg] translate-x-[-30px] shadow-[0_0_20px_rgba(230,0,18,0.2)] overflow-hidden group hover:rotate-0 hover:translate-x-0 cursor-pointer hover:scale-[1.03] active:scale-95 transition-all duration-300"
+              >
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10" />
                 <img
                   src="https://drive.google.com/thumbnail?id=1_qZ_4s_O-cHHWa7COo5EnITUfQCh5mOl&sz=w1000"
@@ -146,7 +149,10 @@ export function LandingPage() {
                 </div>
               </div>
               
-              <div className="absolute w-[270px] h-[350px] bg-[#111113] border border-white rounded-xl rotate-[6deg] translate-x-[30px] translate-y-4 shadow-[0_0_20px_rgba(255,255,255,0.25)] overflow-hidden group hover:rotate-0 hover:translate-x-0 transition-all duration-300">
+              <div 
+                onClick={() => setView('shop')}
+                className="absolute w-[270px] h-[350px] bg-[#111113] border border-white rounded-xl rotate-[6deg] translate-x-[30px] translate-y-4 shadow-[0_0_20px_rgba(255,255,255,0.25)] overflow-hidden group hover:rotate-0 hover:translate-x-0 cursor-pointer hover:scale-[1.03] active:scale-95 transition-all duration-300"
+              >
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10" />
                 <img
                   src="https://otakura.com/cdn/shop/files/IchibanKujiOnePieceNewFourEmperorsLastOnePrizeMonkeyD.LuffyFigure_1066dfc2-e0f2-492e-8d0d-8d78899094e7.webp?v=1719065426&width=800"

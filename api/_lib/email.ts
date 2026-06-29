@@ -134,9 +134,9 @@ export async function sendOrderEmails(
           <!-- Payment Success Banner -->
           <div style="padding: 32px 24px; text-align: center; background-color: #fffaf0; border-bottom: 1px solid #feebc8;">
             <div style="width: 48px; height: 48px; background-color: #e60012; color: #ffffff; border-radius: 50%; font-size: 24px; font-weight: bold; line-height: 48px; text-align: center; margin: 0 auto 16px auto;">✓</div>
-            <h2 style="color: #e60012; margin: 0 0 8px 0; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">YOUR PAYMENT SECURED</h2>
+            <h2 style="color: #e60012; margin: 0 0 8px 0; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Order Confirmed</h2>
             <p style="color: #4a5568; margin: 0; font-size: 13.5px; line-height: 1.5; font-weight: 500;">
-              Thank you for shopping with us! Your order matches our trusted calculations, and your PayPal payment was captured successfully.
+              Thank you for your purchase! Your PayPal payment has been received successfully. We’ll start processing your order right away.
             </p>
           </div>
 

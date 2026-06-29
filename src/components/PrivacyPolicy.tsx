@@ -36,19 +36,6 @@ export function PrivacyPolicy() {
         </p>
       </div>
 
-      {/* Warning/Disclaimer bar */}
-      <div className="bg-[#18181c] border border-white/10 p-5 rounded-xl mb-10 flex gap-4 items-start">
-        <div className="p-2.5 bg-yellow-400/10 rounded border border-yellow-400/20 text-yellow-500">
-          <Shield className="w-5 h-5 animate-pulse" />
-        </div>
-        <div className="text-xs space-y-1 font-semibold leading-relaxed">
-          <h4 className="text-white font-mono text-[11px] uppercase tracking-wider">NOTICE TO ADMINISTRATORS & CUSTOMERS</h4>
-          <p className="text-gray-400 font-medium">
-            This document sets out how Akiba Hub (akibahub.co.uk) handles personal data on our direct import channel. This template is designed for compliant disclosure; customize specific addresses and data controllers inside the source as necessary.
-          </p>
-        </div>
-      </div>
-
       {/* Document Body */}
       <div className="space-y-8 text-gray-300 font-medium text-xs leading-relaxed max-w-3xl mx-auto">
         
@@ -103,25 +90,13 @@ export function PrivacyPolicy() {
           <p className="pl-4">
             To coordinate direct Tokyo imports to your doorstep, we utilize industry-standard, fully audited cloud partners. All data transfers remain protected by secure HTTPS/TLS encryption channels:
           </p>
-          <div className="pl-4 border border-white/5 bg-[#121215] rounded-lg p-4 font-mono text-[11px] text-gray-400 space-y-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <span className="text-white font-bold">PayPal SDK Integration:</span>
-                <p className="mt-0.5">Loads and handles card entries or account checkouts with real-time merchant encryption. No card details ever hit Akiba Hub servers.</p>
-              </div>
-              <div>
-                <span className="text-white font-bold">Google Sheets API:</span>
-                <p className="mt-0.5">Saves order dispatch histories and contact-message spreadsheets directly in private Google Workspace vaults using server-side service credentials.</p>
-              </div>
-              <div>
-                <span className="text-white font-bold">Resend API Provider:</span>
-                <p className="mt-0.5">Dispatches customer checkout notices and relays contact.tsx customer notifications safely using secure API relays.</p>
-              </div>
-              <div>
-                <span className="text-white font-bold">CookieYes Banner:</span>
-                <p className="mt-0.5">Saves your specific consent configurations directly in your secure client browser for up to one calendar year.</p>
-              </div>
-            </div>
+          <div className="pl-4 border border-white/5 bg-[#121215] rounded-lg p-4 font-mono text-[11px] text-gray-400">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 list-disc pl-5">
+              <li className="text-white font-bold">PayPal SDK Integration</li>
+              <li className="text-white font-bold">Google Sheets API</li>
+              <li className="text-white font-bold">Resend API Provider</li>
+              <li className="text-white font-bold">CookieYes Banner</li>
+            </ul>
           </div>
         </section>
 
