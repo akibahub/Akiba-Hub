@@ -33,7 +33,7 @@ export interface ShippingDetails {
   state: string;
   postalCode: string;
   country: string;
-  shippingMethod: 'standard' | 'express';
+  shippingMethod: 'standard' | 'express' | 'free';
 }
 
 export interface Order {

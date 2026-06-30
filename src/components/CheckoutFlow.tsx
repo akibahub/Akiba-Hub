@@ -51,6 +51,25 @@ export function CheckoutFlow() {
   const taxCost = useMemo(() => 0, []); // VAT/tax is handled server-side later if needed
   const totalCost = useMemo(() => subtotal + shippingCost + taxCost, [subtotal, shippingCost, taxCost]);
 
+  // Auto-manage selected shipping method based on £50 threshold
+  useEffect(() => {
+    if (subtotal >= 50) {
+      setFormData((prev) => {
+        if (prev.shippingMethod !== 'free') {
+          return { ...prev, shippingMethod: 'free' };
+        }
+        return prev;
+      });
+    } else {
+      setFormData((prev) => {
+        if (prev.shippingMethod !== 'standard') {
+          return { ...prev, shippingMethod: 'standard' };
+        }
+        return prev;
+      });
+    }
+  }, [subtotal]);
+
   // Handle address/details text changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -298,37 +317,58 @@ export function CheckoutFlow() {
                       <h4 className="text-xs font-mono font-bold text-white uppercase tracking-widest">SELECT SHIPPING METHOD</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         
-                        <label className={`block p-4 rounded border transition-all cursor-pointer relative font-mono ${formData.shippingMethod === 'standard' ? 'bg-[#e60012]/10 border-[#e60012] text-white shadow-[0_0_10px_rgba(230,0,18,0.15)]' : 'bg-[#18181c] border-white/10 hover:border-white/20'}`}>
+                        <label className={`block p-4 rounded border transition-all relative font-mono ${subtotal >= 50 ? 'bg-[#18181c]/50 border-white/5 opacity-50 cursor-not-allowed text-gray-500' : formData.shippingMethod === 'standard' ? 'bg-[#e60012]/10 border-[#e60012] text-white shadow-[0_0_10px_rgba(230,0,18,0.15)] cursor-pointer' : 'bg-[#18181c] border-white/10 hover:border-white/20 cursor-pointer'}`}>
                           <input
                             type="radio"
                             name="shippingMethod"
                             value="standard"
                             checked={formData.shippingMethod === 'standard'}
-                            onChange={() => setFormData((prev) => ({ ...prev, shippingMethod: 'standard' }))}
-                            className="absolute top-4 right-4 text-[#e60012] focus:ring-[#e60012] cursor-pointer"
+                            disabled={subtotal >= 50}
+                            onChange={() => {
+                              if (subtotal < 50) {
+                                setFormData((prev) => ({ ...prev, shippingMethod: 'standard' }));
+                              }
+                            }}
+                            className={`absolute top-4 right-4 text-[#e60012] focus:ring-[#e60012] ${subtotal >= 50 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                           />
                           <span className="text-xs font-bold block text-white">STANDARD SHIPPING</span>
-                          <span className="text-[9px] text-gray-400 block mt-1 leading-normal font-sans font-semibold">Tracked parcel delivery // 4 - 8 business days</span>
+                          <span className="text-[9px] text-gray-400 block mt-1 leading-normal font-sans font-semibold">Tracked parcel delivery // 2 - 8 business days</span>
                           <span className="text-xs font-bold text-[#e60012] block mt-3">
-                            {subtotal >= 50 ? 'FREE DELIVERY' : '£3.99'}
+                            £3.99
                           </span>
                         </label>
 
-                        <label className={`block p-4 rounded border transition-all cursor-pointer relative font-mono ${formData.shippingMethod === 'express' ? 'bg-[#e60012]/10 border-[#e60012] text-white shadow-[0_0_10px_rgba(230,0,18,0.15)]' : 'bg-[#18181c] border-white/10 hover:border-white/20'}`}>
+                        <label className={`block p-4 rounded border transition-all relative font-mono ${subtotal < 50 ? 'bg-[#18181c]/50 border-white/5 opacity-50 cursor-not-allowed text-gray-500' : formData.shippingMethod === 'free' ? 'bg-[#e60012]/10 border-[#e60012] text-white shadow-[0_0_10px_rgba(230,0,18,0.15)] cursor-pointer' : 'bg-[#18181c] border-white/10 hover:border-white/20 cursor-pointer'}`}>
                           <input
                             type="radio"
                             name="shippingMethod"
-                            value="express"
-                            checked={false}
-                            disabled
-                            onChange={() => {}}
-                            className="absolute top-4 right-4 text-[#e60012] focus:ring-[#e60012] cursor-not-allowed"
+                            value="free"
+                            checked={formData.shippingMethod === 'free'}
+                            disabled={subtotal < 50}
+                            onChange={() => {
+                              if (subtotal >= 50) {
+                                setFormData((prev) => ({ ...prev, shippingMethod: 'free' }));
+                              }
+                            }}
+                            className={`absolute top-4 right-4 text-[#e60012] focus:ring-[#e60012] ${subtotal < 50 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                           />
-                          <span className="text-xs font-bold block text-white">DHL EXPRESS INTERNATIONAL</span>
-                          <span className="text-[9px] text-gray-400 block mt-1 leading-normal font-sans font-semibold">Coming soon // standard shipping is active now</span>
-                          <span className="text-xs font-bold text-gray-500 block mt-3">
-                            UNAVAILABLE
-                          </span>
+                          <span className="text-xs font-bold block text-white">FREE DELIVERY</span>
+                          {subtotal < 50 ? (
+                            <>
+                              <span className="text-[9px] text-gray-400 block mt-1 leading-normal font-sans font-semibold">Available on orders £50+</span>
+                              <span className="text-[9px] text-[#e60012] block mt-0.5 font-sans font-semibold">Spend £{Math.max(0, 50 - subtotal).toFixed(2)} more to unlock</span>
+                              <span className="text-xs font-bold text-gray-500 block mt-3">
+                                UNAVAILABLE
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-[9px] text-gray-400 block mt-1 leading-normal font-sans font-semibold">Tracked parcel delivery // 2 - 8 business days</span>
+                              <span className="text-xs font-bold text-[#e60012] block mt-3">
+                                £0.00
+                              </span>
+                            </>
+                          )}
                         </label>
                       </div>
                     </div>
@@ -362,7 +402,7 @@ export function CheckoutFlow() {
                       <p className="text-gray-300 leading-relaxed font-semibold">
                         Name: <span className="text-white font-black">{formData.fullName}</span> ({formData.email})<br />
                         Address: <span className="text-white">{formData.addressLine1}, {formData.city}, {formData.state} {formData.postalCode}, {formData.country}</span><br />
-                        Shipping: <span className="text-[#e60012] font-bold">{formData.shippingMethod === 'express' ? 'DHL Express Priority Air 🚀' : 'Standard Delivery'}</span>
+                        Shipping: <span className="text-[#e60012] font-bold">{formData.shippingMethod === 'express' ? 'DHL Express Priority Air 🚀' : formData.shippingMethod === 'free' ? 'Free Delivery' : 'Standard Delivery'}</span>
                       </p>
                     </div>
 
