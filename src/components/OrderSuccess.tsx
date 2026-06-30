@@ -188,8 +188,8 @@ export function OrderSuccess() {
 
           {/* Secure disclaimer Cop copy */}
           <div className="border-t border-white/5 pt-5 text-center text-gray-500 font-mono text-[8px] font-bold leading-relaxed">
-            This invoice details your completed sandbox simulated checkout. Simulated values do not carry live transaction payloads.<br />
-            Thank you for shopping with Akiba Hub
+            Thank you for shopping with Akiba Hub.<br />
+            Your order has been confirmed and your payment has been received successfully.
           </div>
         </div>
 
