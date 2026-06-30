@@ -48,7 +48,14 @@ export async function calculateTrustedOrder(cart: CartRequestItem[]) {
     };
   });
 
-  const shipping = subtotal >= 50 ? 0 : 3.99;
+  const isFreeShippingTestMode =
+    process.env.FREE_SHIPPING_TEST_MODE === "true";
+
+  const shipping = isFreeShippingTestMode
+    ? 0
+    : subtotal >= 50
+      ? 0
+      : 3.99;
   const total = Number((subtotal + shipping).toFixed(2));
 
   return {
