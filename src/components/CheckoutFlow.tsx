@@ -408,6 +408,7 @@ export function CheckoutFlow() {
                                 clientId: (import.meta as any).env.VITE_PAYPAL_CLIENT_ID || '',
                                 currency: 'GBP',
                                 intent: 'capture',
+                                locale: 'en_GB',
                               }}
                             >
                               <PayPalButtons
@@ -430,7 +431,19 @@ export function CheckoutFlow() {
                                     headers: {
                                       'Content-Type': 'application/json',
                                     },
-                                    body: JSON.stringify({ cart: safeCart }),
+                                    body: JSON.stringify({
+                                      cart: safeCart,
+                                      customer: {
+                                        name: formData.fullName,
+                                        email: formData.email,
+                                        phone: formData.phone,
+                                        address1: formData.addressLine1,
+                                        address2: formData.addressLine2 || '',
+                                        city: formData.city,
+                                        postcode: formData.postalCode,
+                                        countryCode: 'GB',
+                                      },
+                                    }),
                                   });
 
                                   const data = await response.json();

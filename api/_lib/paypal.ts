@@ -32,7 +32,15 @@ export async function createPayPalOrder(
   items: { id: string; name: string; price: number; quantity: number }[],
   subtotal: string,
   shipping: string,
-  total: string
+  total: string,
+  customer: {
+    name: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    postcode: string;
+    countryCode: "GB";
+  }
 ) {
   const accessToken = await getPayPalAccessToken();
 
@@ -44,6 +52,13 @@ export async function createPayPalOrder(
     },
     body: JSON.stringify({
       intent: "CAPTURE",
+      payment_source: {
+        paypal: {
+          experience_context: {
+            shipping_preference: "SET_PROVIDED_ADDRESS",
+          },
+        },
+      },
       purchase_units: [
         {
           amount: {
@@ -60,9 +75,21 @@ export async function createPayPalOrder(
               },
             },
           },
+          shipping: {
+            name: {
+              full_name: customer.name,
+            },
+            address: {
+              address_line_1: customer.address1,
+              address_line_2: customer.address2 || undefined,
+              admin_area_2: customer.city,
+              postal_code: customer.postcode,
+              country_code: "GB",
+            },
+          },
           items: items.map((item) => ({
-            name: item.name,
-            sku: item.id,
+            name: item.name.slice(0, 127),
+            sku: item.id.slice(0, 127),
             quantity: String(item.quantity),
             category: "PHYSICAL_GOODS",
             unit_amount: {
