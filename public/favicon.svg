@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#07070a"/>
+  <circle cx="256" cy="256" r="158" fill="#e60012"/>
+  <circle cx="256" cy="256" r="122" fill="#111116"/>
+  <path d="M256 82 L286 142 L352 121 L331 187 L390 218 L326 249 L363 309 L295 302 L256 366 L217 302 L149 309 L186 249 L122 218 L181 187 L160 121 L226 142 Z" fill="#e60012" opacity="0.55"/>
+  <circle cx="256" cy="256" r="98" fill="#e60012"/>
+  <text x="256" y="286" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="118" font-weight="900" fill="#ffffff" letter-spacing="-8">AH</text>
+  <rect x="166" y="318" width="180" height="14" rx="7" fill="#ffffff" opacity="0.95"/>
+</svg>
